@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomeActivity">
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#BC0F0F" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="65dp"
+        android:background="#e6f3e5">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="30dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginRight="12dp"
+                android:layout_marginLeft="12dp">
+                <ImageView android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/img"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/app_name"/>
+
+                <TextView
+                    android:id="@+id/txt"
+                    android:textSize="22sp"
+                    android:text="Title"
+                    android:gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:layout_below="@+id/img"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/txt_add"
+                        android:textSize="18dp"
+                        android:text="Title"
+                        android:layout_marginTop="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                    <TextView
+                        android:textSize="18dp"
+                        android:text="  రోజులు  "
+                        android:layout_marginTop="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                    <TextView
+                        android:textSize="18dp"
+                        android:text=" /    "
+                        android:layout_marginTop="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                    <TextView
+                        android:textSize="18dp"
+                        android:text="12"
+                        android:id="@+id/txt_details"
+                        android:layout_marginTop="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                    <TextView
+                        android:textSize="18dp"
+                        android:text="  భక్తులు "
+                        android:layout_marginTop="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:textSize="18dp"
+                        android:text="రూ."
+                        android:layout_marginTop="14dp"
+                        android:layout_marginBottom="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                    <TextView
+                        android:textSize="18dp"
+                        android:id="@+id/txt_amount"
+                        android:text="   hhhhhhhhh "
+                        android:layout_marginTop="14dp"
+                        android:layout_marginBottom="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                    <TextView
+                        android:textSize="18dp"
+                        android:text=" /- "
+                        android:layout_marginTop="14dp"
+                        android:layout_marginBottom="14dp"
+                        android:layout_below="@+id/img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="normal"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enquiry About Yathra"
+                android:textColor="#BC0F0F"
+                android:textSize="20dp"
+                android:textStyle="bold"
+                android:layout_marginTop="14dp"
+                android:gravity="center"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:layout_marginBottom="50dp"
+                android:background="@drawable/enquiry_background"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Provide Your Details"
+                    android:gravity="center"
+                    android:textSize="20dp"
+                    android:layout_marginTop="16dp"
+                    android:textColor="#2B812F"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginRight="12dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="10dp">
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:hint="Enter the First Name"
+                        android:paddingLeft="10dp"
+                        android:inputType="textAutoComplete"
+                        android:background="@drawable/enq_edt_border"/>
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="12dp"
+                        android:hint="Enter the Lat Name"
+                        android:paddingLeft="10dp"
+                        android:inputType="textAutoComplete"
+                        android:background="@drawable/enq_edt_border"/>
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="12dp"
+                        android:hint="Enter the Email"
+                        android:paddingLeft="10dp"
+                        android:inputType="textAutoComplete"
+                        android:background="@drawable/enq_edt_border"/>
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="12dp"
+                        android:hint="Enter the Mobile Number"
+                        android:paddingLeft="10dp"
+                        android:inputType="textAutoComplete"
+                        android:background="@drawable/enq_edt_border"/>
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="12dp"
+                        android:hint="Enter the Message"
+                        android:paddingLeft="10dp"
+                        android:inputType="textAutoComplete"
+                        android:background="@drawable/enq_edt_border"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="12dp"
+                        android:text="Submit"
+                        android:textColor="#FFF"
+                        android:textSize="18dp"
+                        android:layout_marginBottom="20dp"
+                        android:backgroundTint="#43A5B1"
+                        android:textStyle="normal"/>
+
+                </LinearLayout>
+            </LinearLayout>
+
+<!--            <TextView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text=" శబరిమల వైకోం గురువాయుర్ "-->
+<!--                android:textStyle="bold"-->
+<!--                android:textSize="20dp"-->
+<!--                android:textColor="#BC0F0F"-->
+<!--                android:gravity="center"-->
+<!--                android:layout_marginTop="14dp"/>-->
+
+<!--            <androidx.viewpager.widget.ViewPager-->
+<!--                android:id="@+id/viewPagerMain"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_marginLeft="12dp"-->
+<!--                android:layout_marginRight="12dp"-->
+<!--                android:layout_height="200dp"/>-->
+
+<!--            <TextView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="14dp"-->
+<!--                android:text=" రోజు వారి  యాత్ర"-->
+<!--                android:textColor="#BC0F0F"-->
+<!--                android:textSize="20dp"-->
+<!--                android:textStyle="bold"-->
+<!--                android:gravity="center"/>-->
+
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical"-->
+<!--                android:layout_marginTop="12dp">-->
+<!--                <LinearLayout-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:orientation="vertical"-->
+<!--                    android:layout_marginTop="14dp"-->
+<!--                    android:layout_marginLeft="14dp"-->
+<!--                    android:layout_marginRight="14dp"-->
+<!--                    android:layout_marginBottom="50dp"-->
+<!--                    android:background="@drawable/enquiry_background">-->
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="vertical"-->
+<!--                        android:layout_marginTop="14dp"-->
+<!--                        android:layout_marginLeft="14dp"-->
+<!--                        android:layout_marginRight="14dp"-->
+<!--                        android:layout_marginBottom="14dp">-->
+
+<!--                        <TextView-->
+<!--                            android:layout_width="100dp"-->
+<!--                            android:layout_height="100dp"-->
+<!--                            android:text="DAY1"-->
+<!--                            android:textStyle="bold"-->
+<!--                            android:textSize="24dp"-->
+<!--                            android:textColor="#FFF"-->
+<!--                            android:gravity="center"-->
+<!--                            android:background="#BC0F0F"/>-->
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:text="కొచ్చి విమానాశ్రయం - వైకోం  - ఎరుమేలి 190 km"-->
+<!--                            android:textColor="#000"-->
+<!--                            android:textSize="18dp"-->
+<!--                            android:gravity="center"-->
+<!--                            android:layout_marginTop="12dp"/>-->
+<!--                        <ImageView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="100dp"-->
+<!--                            android:src="@drawable/ayyapa_anadanam"-->
+<!--                            android:layout_marginTop="12dp"/>-->
+
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginTop="12dp"-->
+<!--                            android:text="కొచ్చి విమానాశ్రయం నుండి బయలుదేరి వైకోం లో పడవ ప్రయాణం, మరియు అక్కడే పడవ లో భోజనం చేసి ఎరుమేలి కి బయలుదేరుతారు. ఎరుమేలి లో అల్పాహారం అయ్యాక పంబా/నిలక్కల్ లో దింపుతారు.  తిరిగి మరుసటి రోజు మధ్యానం 12||గం. ల వరకు తిరిగి పంబా దగ్గరికి రావలేయును. "-->
+<!--                            android:textSize="18dp"-->
+<!--                            android:textColor="#000"/>-->
+
+<!--                    </LinearLayout>-->
+<!--                </LinearLayout>-->
+
+<!--            </LinearLayout>-->
+        </LinearLayout>
+    </ScrollView>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

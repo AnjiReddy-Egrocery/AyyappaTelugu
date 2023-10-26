@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name" translatable="false">అయ్యప్ప తెలుగు</string>
+    <string name="nav_open" translatable="false">Open</string>
+    <string name="nav_close" translatable="false">Close</string>
+
+    <string name="Ayyapa_karyam" translatable="false">అయ్యప్ప కార్యక్రమలు</string>
+    <string name="guruswami_list" translatable="false">గురుస్వాములు జాబిత</string>
+    <string name="ayyappa_mandali" translatable="false">అయ్యప్ప భజన మండలి</string>
+    <string name="ayyappa_books" translatable="false">అయ్యప్ప పుస్తకాలు</string>
+    <string name="ayyappa_tours" translatable="false">అయ్యప్ప యాత్రలు</string>
+    <string name="ayyappa_decration" translatable="false">పూజా పీఠం అలంకరణ</string>
+    <string name="ayyappa_songs" translatable="false">అయ్యప్ప భజన పాటలు</string>
+    <string name="ayyappa_details" translatable="false">మా గురించి</string>
+    <string name="title_tool_bar" translatable="false">స్వామి శరణం అయ్యప్ప</string>
+
+
+</resources>
