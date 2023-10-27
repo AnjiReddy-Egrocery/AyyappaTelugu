@@ -4,11 +4,11 @@ plugins {
 
 
 android {
-    namespace 'com.example.ayyapatelugu'
+    namespace 'com.dst.ayyapatelugu'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.ayyapatelugu"
+        applicationId "com.dst.ayyapatelugu"
         minSdk 19
         targetSdk 33
         versionCode 1
