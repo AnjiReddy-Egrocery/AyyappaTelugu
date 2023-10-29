@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -68,11 +70,50 @@ public class RegisterActivity extends AppCompatActivity {
                 String number = edtNumber.getText().toString().trim();
                 String email = edtEmail.getText().toString().trim();
                 String password = edtPassword.getText().toString().trim();
+                String reEnterPassword=edtReenterPassword.getText().toString().trim();
 
+                if (!isValidFirstName(name)){
 
-                validationMethod(name, lastname, number, email, password);
+                }else if(!isValidLastName(lastname)){
+
+                }else if (!isValidEmail(email)){
+                    edtEmail.setError("Invalid email address");
+                }else if (isValidMobileNumber(number)){
+
+                }else if (!isValidPassword(password)) {
+                    edtPassword.setError("Invalid password");
+                } else if (!doPasswordsMatch(password, reEnterPassword)) {
+                    Toast.makeText(RegisterActivity.this, "PassWord Doen't Match.", Toast.LENGTH_SHORT).show();
+                }else {
+                    validationMethod(name, lastname, number, email, password);
+                }
             }
         });
+    }
+
+    private boolean doPasswordsMatch(String password, String reEnterPassword) {
+        return password.equals(reEnterPassword);
+    }
+
+    private boolean isValidPassword(String password) {
+        return password.length() >= 6;
+    }
+
+    private boolean isValidMobileNumber(String number) {
+        return Patterns.PHONE.matcher(number).matches();
+    }
+
+    private boolean isValidLastName(String lastname) {
+        return !TextUtils.isEmpty(lastname);
+    }
+
+    private boolean isValidFirstName(String name) {
+        return !TextUtils.isEmpty(name);
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+        return email.matches(emailPattern);
     }
 
     private void validationMethod(String name, String lastname, String number, String email, String password) {
@@ -100,8 +141,6 @@ public class RegisterActivity extends AppCompatActivity {
                     UserDataResponse userDataResponse = response.body();
                     if (userDataResponse.getErrorCode().equals("203")) {
                         Toast.makeText(RegisterActivity.this, "Email and Mobile Number alerady Exists", Toast.LENGTH_SHORT).show();
-
-
                     } else if (userDataResponse.getErrorCode().equals("200")) {
                         String registerId = "";
                         String otp="";
@@ -109,31 +148,14 @@ public class RegisterActivity extends AppCompatActivity {
                         List<UserDataResponse.Result> list = userDataResponse.getResult();
                         for (int i = 0; i < list.size(); i++) {
                             registerId = list.get(i).getRegisterId();
-
+                            otp=list.get(i).getOtp();
                             Log.e("registerId", "registerId: " + registerId);
                         }
                         Intent intent = new Intent(RegisterActivity.this, VerifyActivity.class);
                         intent.putExtra("registerId", registerId);
+                        intent.putExtra("otp",otp);
                         startActivity(intent);
                     }
-
-
-
-                   /* if (userDataResponse != null && "Success".equals(userDataResponse.getStatus())) {
-
-                       // UserDataResponse result = userDataResponse.getResult();
-
-                        Toast.makeText(RegisterActivity.this,""+result,Toast.LENGTH_LONG).show();
-                        String registerId=result.getRegisterId();
-
-                        Intent intent = new Intent(RegisterActivity.this, VerifyActivity.class);
-                        intent.putExtra("registerId", registerId);
-                        startActivity(intent);
-
-                    } else {
-                        String datamessage=userDataResponse.getErrorMessage();
-                        Toast.makeText(RegisterActivity.this, datamessage, Toast.LENGTH_SHORT).show();
-                    }*/
                 } else {
                     Toast.makeText(RegisterActivity.this, "Data Error", Toast.LENGTH_LONG).show();
                 }
@@ -145,6 +167,4 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
     }
-
-
 }

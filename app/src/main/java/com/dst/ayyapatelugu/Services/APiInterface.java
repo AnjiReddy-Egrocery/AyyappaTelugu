@@ -3,9 +3,12 @@ package com.dst.ayyapatelugu.Services;
 import com.dst.ayyapatelugu.Model.BajanaManadaliListModel;
 import com.dst.ayyapatelugu.Model.BajanaMandaliList;
 import com.dst.ayyapatelugu.Model.BooksListModel;
+import com.dst.ayyapatelugu.Model.CalenderDataResponse;
 import com.dst.ayyapatelugu.Model.GuruSwamiList;
 import com.dst.ayyapatelugu.Model.KaryakarmamList;
+import com.dst.ayyapatelugu.Model.LoginDataResponse;
 import com.dst.ayyapatelugu.Model.UserDataResponse;
+import com.dst.ayyapatelugu.Model.VerifyUserDataResponse;
 import com.dst.ayyapatelugu.Model.YatraList;
 import com.dst.ayyapatelugu.Model.decoratorListModel;
 
@@ -51,6 +54,22 @@ public interface APiInterface {
             @Part("mobileNumber") RequestBody mobileNumber,
             @Part("pwd") RequestBody pwd
     );
+
+    @Multipart
+    @POST("APICalls/Users/verifyUserAccount")
+    Call<VerifyUserDataResponse> verifyData(@Part("registerId") RequestBody registerId,
+                                            @Part("otp") RequestBody otp);
+
+    @Multipart
+    @POST("APICalls/Users/userLogin")
+    Call<LoginDataResponse> LoginData(@Part("loginMobile") RequestBody loginMobile ,
+                                      @Part("loginPassword") RequestBody loginPassword);
+
+    @Multipart
+    @POST("APICalls/Calendar/index")
+    Call<CalenderDataResponse> calenderData(@Part("year") RequestBody year);
+
+
 
 
 }

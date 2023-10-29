@@ -1,5 +1,7 @@
 package com.dst.ayyapatelugu;
 
+import static java.security.AccessController.getContext;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,13 +26,17 @@ import android.widget.TextView;
 
 
 import com.dst.ayyapatelugu.Activity.AboutActivity;
+import com.dst.ayyapatelugu.Activity.AnadanamActivity;
 import com.dst.ayyapatelugu.Activity.AyyapaBooksListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaKaryamListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaMandaliListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaPetamListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaTourseDetailsACtivity;
+import com.dst.ayyapatelugu.Activity.CalenderActivity;
 import com.dst.ayyapatelugu.Activity.GuruSwamiListActivity;
 import com.dst.ayyapatelugu.Adapter.ViewPagerAdapter;
+import com.dst.ayyapatelugu.DataBase.SharedPrefManager;
+import com.dst.ayyapatelugu.Model.LoginDataResponse;
 import com.dst.ayyapatelugu.User.LoginActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -56,7 +62,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     Timer timer;
 
-    int[] images = {R.drawable.banarimage, R.drawable.banarimage2, R.drawable.banarimage3};
+    int[] images = {R.drawable.baneer, R.drawable.banner1, R.drawable.banner2};
 
     GoogleSignInOptions gso;
     GoogleSignInClient gsc;
@@ -102,13 +108,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 mViewPager.post(new Runnable() {
                     @Override
                     public void run() {
-                        mViewPager.setCurrentItem((mViewPager.getCurrentItem() + 8) % images.length);
+                        mViewPager.setCurrentItem((mViewPager.getCurrentItem() + 4) % images.length);
                     }
                 });
             }
         };
         timer = new Timer();
-        timer.schedule(timerTask, 6000, 6000);
+        timer.schedule(timerTask, 4000, 4000);
         mViewPager.setCurrentItem(0);
         layoutAyyapaKaryam = findViewById(R.id.layout_karyam);
         layoutGuruswamiList = findViewById(R.id.guru_swami_list);
@@ -177,21 +183,26 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         gsc = GoogleSignIn.getClient(HomeActivity.this, gso);
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        String name="";
+        String email="";
+
         if (account != null) {
-
-            String name = account.getDisplayName().toString();
-            String email = account.getEmail().toString();
+            name = account.getDisplayName().toString();
+            email = account.getEmail().toString();
             String image = String.valueOf(account.getPhotoUrl());
-            txtName.setText(name);
-            txtEmail.setText(email);
             Picasso.get().load(image).into(imageView);
+        }else {
 
+            LoginDataResponse.Result result= SharedPrefManager.getInstance(getApplicationContext()).getUserData();
+            name=result.getUserFirstName();
+            email=result.getUserEmail();
 
         }
 
+        txtName.setText(name);
+        txtEmail.setText(email);
+
     }
-
-
     @Override
     protected void onDestroy() {
         timer.cancel();
@@ -281,7 +292,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
             Intent intent = new Intent(HomeActivity.this, AboutActivity.class);
             startActivity(intent);
-        } else if (action == R.id.log_out) {
+        } else if (action == R.id.ayyappa_calender){
+
+            Intent intent=new Intent(HomeActivity.this, CalenderActivity.class);
+            startActivity(intent);
+
+
+        } else if(action == R.id.ayyappa_anadanam){
+
+            Intent intent=new Intent(HomeActivity.this, AnadanamActivity.class);
+            startActivity(intent);
+
+        }else if (action == R.id.log_out) {
             gsc.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {

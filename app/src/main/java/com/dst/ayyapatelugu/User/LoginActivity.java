@@ -14,14 +14,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dst.ayyapatelugu.DataBase.SharedPrefManager;
 import com.dst.ayyapatelugu.HomeActivity;
+import com.dst.ayyapatelugu.Model.LoginDataResponse;
 import com.dst.ayyapatelugu.R;
+import com.dst.ayyapatelugu.Services.APiInterface;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity {
     TextView txtCreateAccount, txtFpwd;
@@ -66,12 +79,18 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                isAllFieldsChecked = CheckAllFields();
-                if (isAllFieldsChecked) {
-                    Intent i = new Intent(LoginActivity.this, HomeActivity.class);
-                    startActivity(i);
-                }
+               String  loginMobile =edtEmail.getText().toString();
+               String loginPassword=edtPassword.getText().toString();
 
+                if (!isValidEmail(loginMobile)) {
+                    edtEmail.setError("Invalid email address");
+                    return; // Stop further processing
+                }else if (!isValidPassword(loginPassword)) {
+                    edtPassword.setError("Invalid password");
+                    return; // Stop further processing
+                }else {
+                    LoginMethod(loginMobile,loginPassword);
+                }
             }
         });
 
@@ -93,6 +112,59 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             startActivity(intent);
         }
+    }
+
+    private void LoginMethod(String parentEmail, String password) {
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+        APiInterface apiClient = retrofit.create(APiInterface.class);
+        RequestBody parentEmailPart = RequestBody.create(MediaType.parse("text/plain"), parentEmail);
+        RequestBody passwordPart = RequestBody.create(MediaType.parse("text/plain"), password);
+
+        Call<LoginDataResponse> call=apiClient.LoginData(parentEmailPart,passwordPart);
+        call.enqueue(new Callback<LoginDataResponse>() {
+            @Override
+            public void onResponse(Call<LoginDataResponse> call, Response<LoginDataResponse> response) {
+                if (response.isSuccessful()){
+                    LoginDataResponse dataResponse=response.body();
+                    if (dataResponse.getErrorCode().equals("201")){
+                        Toast.makeText(LoginActivity.this,"Email and Password Doesn't Match",Toast.LENGTH_LONG).show();
+                    }else if (dataResponse.getErrorCode().equals("200")){
+                        SharedPrefManager.getInstance(getApplicationContext()).insertData(response.body());
+
+                            Intent intent=new Intent(LoginActivity.this,HomeActivity.class);
+
+                            startActivity(intent);
+
+
+
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LoginDataResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    private boolean isValidPassword(String password) {
+        return password.length() >= 6;
+    }
+
+    private boolean isValidEmail(String parentEmail) {
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+        return parentEmail.matches(emailPattern);
     }
 
     private void SignIn() {
@@ -117,22 +189,5 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private boolean CheckAllFields() {
-
-        boolean valid = true;
-
-        // String email = edtEmail.getText().toString();
-        String password = edtPassword.getText().toString();
-
-
-        if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
-            edtPassword.setError("between 4 and 10 alphanumeric characters");
-            valid = false;
-        } else {
-            edtPassword.setError(null);
-        }
-
-        return valid;
-    }
 }
 
