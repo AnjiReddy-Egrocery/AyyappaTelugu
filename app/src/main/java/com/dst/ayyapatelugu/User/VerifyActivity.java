@@ -59,6 +59,13 @@ public class VerifyActivity extends AppCompatActivity {
                    VerificationMethod(registationId,otp);
                }
 
+                if (isValidOtp(otp)){
+
+                    VerificationMethod(registationId,otp);
+                } else {
+                    Toast.makeText(VerifyActivity.this, "Validation failed. Please check your input.", Toast.LENGTH_SHORT).show();
+                }
+
 
             }
         });
@@ -92,13 +99,7 @@ public class VerifyActivity extends AppCompatActivity {
                     if (verifyUserDataResponse.getErrorCode().equals("201")){
                         Toast.makeText(VerifyActivity.this,"Enter OTP is Invalid",Toast.LENGTH_LONG).show();
                     }else if (verifyUserDataResponse.getErrorCode().equals("200")){
-                        String email = "";
-                        List<VerifyUserDataResponse.Result> results=verifyUserDataResponse.getResult();
-                        for (int i=0; i<=results.size();i++){
-                            email=results.get(i).getUserEmail();
-                        }
                         Intent intent = new Intent(VerifyActivity.this, LoginActivity.class);
-                        intent.putExtra("userEmail", email);
                         startActivity(intent);
                     }
                 }

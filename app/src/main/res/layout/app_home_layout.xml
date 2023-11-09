@@ -9,7 +9,7 @@
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewPagerMain"
         android:layout_width="match_parent"
-        android:layout_height="320dp"
+        android:layout_height="210dp"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter">
 
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="18dp"
         android:layout_below="@id/viewPagerMain">
 
         <ScrollView
@@ -49,26 +49,27 @@
                         android:id="@+id/layout_karyam"
                         android:orientation="vertical">
                         <ImageView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:src="@drawable/pojja_karyakramalu"
+                            android:src="@drawable/karyakarmalu"
                             android:layout_marginTop="12dp"
                             android:layout_marginLeft="10dp"
                             android:layout_marginRight="10dp"
                             android:adjustViewBounds="true"
+                            android:layout_marginBottom="18dp"
                             android:scaleType="fitCenter"
                             />
-                        <TextView
+                       <!-- <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/Ayyapa_karyam"
                             android:textSize="14dp"
                             android:singleLine="true"
                             android:layout_marginTop="12dp"
-                            android:layout_marginBottom="18dp"
+
                             android:textColor="#000"
                             android:gravity="center"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"/>-->
                     </LinearLayout>
 
                     <LinearLayout
@@ -80,25 +81,26 @@
                         android:id="@+id/guru_swami_list"
                         android:orientation="vertical">
                         <ImageView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:layout_marginRight="10dp"
                             android:layout_marginLeft="10dp"
                             android:adjustViewBounds="true"
                             android:scaleType="fitCenter"
-                            android:src="@drawable/guru_swami"/>
-                        <TextView
+                            android:layout_marginBottom="18dp"
+                            android:src="@drawable/guruswamulu"/>
+                       <!-- <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/guruswami_list"
                             android:textSize="14dp"
                             android:textColor="#000"
                             android:singleLine="true"
-                            android:layout_marginBottom="18dp"
+
                             android:layout_marginTop="12dp"
                             android:gravity="center"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"/>-->
                     </LinearLayout>
 
                 </LinearLayout>
@@ -120,26 +122,27 @@
                         android:id="@+id/ayyapa_mandali"
                         android:orientation="vertical">
                         <ImageView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:layout_marginLeft="10dp"
                             android:layout_marginRight="10dp"
                             android:adjustViewBounds="true"
                             android:scaleType="fitCenter"
-                            android:src="@drawable/ayyappa_bajana"
+                            android:layout_marginBottom="18dp"
+                            android:src="@drawable/bajanalu"
                             />
-                        <TextView
+                        <!--<TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/ayyappa_mandali"
                             android:textSize="14dp"
                             android:singleLine="true"
                             android:layout_marginTop="12dp"
-                            android:layout_marginBottom="18dp"
+
                             android:textColor="#000"
                             android:gravity="center"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"/>-->
                     </LinearLayout>
 
                     <LinearLayout
@@ -152,26 +155,27 @@
                         android:id="@+id/ayyappa_books"
                         android:orientation="vertical">
                         <ImageView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:layout_marginRight="10dp"
                             android:layout_marginLeft="10dp"
                             android:adjustViewBounds="true"
                             android:scaleType="fitCenter"
-                            android:src="@drawable/pusthakalu"
+                            android:layout_marginBottom="18dp"
+                            android:src="@drawable/ayyappabooks"
                             />
-                        <TextView
+                       <!-- <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/ayyappa_books"
                             android:textSize="14dp"
                             android:singleLine="true"
                             android:textColor="#000"
-                            android:layout_marginBottom="18dp"
+
                             android:gravity="center"
                             android:layout_marginTop="12dp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"/>-->
                     </LinearLayout>
 
                 </LinearLayout>
@@ -194,7 +198,7 @@
                         android:id="@+id/ayyapa_decaration"
                         android:orientation="vertical">
                         <ImageView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:layout_marginLeft="10dp"
@@ -202,18 +206,18 @@
                             android:adjustViewBounds="true"
                             android:scaleType="fitCenter"
                             android:src="@drawable/yathralu"
-                            />
-                        <TextView
+                            android:layout_marginBottom="18dp"/>
+                        <!--<TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/ayyappa_tours"
                             android:textSize="14dp"
                             android:singleLine="true"
                             android:layout_marginTop="12dp"
-                            android:layout_marginBottom="18dp"
+
                             android:textColor="#000"
                             android:gravity="center"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"/>-->
                     </LinearLayout>
 
                     <LinearLayout
@@ -225,26 +229,27 @@
                         android:id="@+id/ayyappa_tourse"
                         android:orientation="vertical">
                         <ImageView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:layout_marginRight="10dp"
                             android:layout_marginLeft="10dp"
                             android:adjustViewBounds="true"
                             android:scaleType="fitCenter"
-                            android:src="@drawable/pooja_pitam"
+                            android:layout_marginBottom="18dp"
+                            android:src="@drawable/poojapetam"
                             />
-                        <TextView
+                        <!--<TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/ayyappa_decration"
                             android:textSize="14dp"
                             android:layout_marginTop="12dp"
-                            android:layout_marginBottom="18dp"
+
                             android:textColor="#000"
                             android:singleLine="true"
                             android:gravity="center"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold"/>-->
                     </LinearLayout>
 
                 </LinearLayout>

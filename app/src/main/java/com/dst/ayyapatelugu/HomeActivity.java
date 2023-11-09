@@ -27,12 +27,14 @@ import android.widget.TextView;
 
 import com.dst.ayyapatelugu.Activity.AboutActivity;
 import com.dst.ayyapatelugu.Activity.AnadanamActivity;
+import com.dst.ayyapatelugu.Activity.AyyaappaDevlyaluActivity;
 import com.dst.ayyapatelugu.Activity.AyyapaBooksListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaKaryamListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaMandaliListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaPetamListActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaTourseDetailsACtivity;
 import com.dst.ayyapatelugu.Activity.CalenderActivity;
+import com.dst.ayyapatelugu.Activity.DevlyaluActivity;
 import com.dst.ayyapatelugu.Activity.GuruSwamiListActivity;
 import com.dst.ayyapatelugu.Adapter.ViewPagerAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedPrefManager;
@@ -62,7 +64,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     Timer timer;
 
-    int[] images = {R.drawable.baneer, R.drawable.banner1, R.drawable.banner2};
+    int[] images = {R.drawable.banner1, R.drawable.banner2,R.drawable.baneer};
 
     GoogleSignInOptions gso;
     GoogleSignInClient gsc;
@@ -240,10 +242,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu, menu);
-        //MenuCompat.setGroupDividerEnabled(menu, true);
-        return true;
+       return true;
     }
 
     @Override
@@ -303,10 +302,21 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             Intent intent=new Intent(HomeActivity.this, AnadanamActivity.class);
             startActivity(intent);
 
+        }else if(action == R.id.ayyappa_devalyalu){
+
+            Intent intent=new Intent(HomeActivity.this, DevlyaluActivity.class);
+            startActivity(intent);
+
+        }else if(action == R.id.ayyappa_ayyappadevlyalu){
+
+            Intent intent=new Intent(HomeActivity.this, AyyaappaDevlyaluActivity.class);
+            startActivity(intent);
+
         }else if (action == R.id.log_out) {
             gsc.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
+                    SharedPrefManager.getInstance(getApplicationContext()).isLoggedOut();
                     finish();
                     Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
                     startActivity(intent);

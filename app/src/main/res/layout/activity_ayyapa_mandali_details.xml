@@ -226,9 +226,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="స్వామి శరణం అయ్యప్ప నార్సింగి జై శాంభవి బక్త సమాజ్"
+            android:text=""
             android:textColor="#000"
             android:textSize="16dp"
+            android:autoLink="web"
             android:id="@+id/txt_discription"
             android:gravity="center"/>
 

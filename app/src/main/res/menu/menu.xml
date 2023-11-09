@@ -65,11 +65,25 @@
     <group android:id="@+id/group9"
         >
         <item
+            android:id="@+id/ayyappa_devalyalu"
+            android:icon="@drawable/baseline_fiber_manual_record_24"
+            android:title="@string/ayyappa_devlyalu"/>
+    </group>
+    <group android:id="@+id/group10"
+        >
+        <item
+            android:id="@+id/ayyappa_ayyappadevlyalu"
+            android:icon="@drawable/baseline_fiber_manual_record_24"
+            android:title="@string/ayyappa_ayyappadevlyalu"/>
+    </group>
+    <group android:id="@+id/group11"
+        >
+        <item
             android:id="@+id/ayyappa_details"
             android:icon="@drawable/baseline_fiber_manual_record_24"
             android:title="@string/ayyappa_details"/>
     </group>
-    <group android:id="@+id/group10"
+    <group android:id="@+id/group12"
         >
         <item
             android:id="@+id/log_out"

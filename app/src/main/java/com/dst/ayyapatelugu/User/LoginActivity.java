@@ -82,15 +82,15 @@ public class LoginActivity extends AppCompatActivity {
                String  loginMobile =edtEmail.getText().toString();
                String loginPassword=edtPassword.getText().toString();
 
-                if (!isValidEmail(loginMobile)) {
-                    edtEmail.setError("Invalid email address");
-                    return; // Stop further processing
-                }else if (!isValidPassword(loginPassword)) {
-                    edtPassword.setError("Invalid password");
-                    return; // Stop further processing
-                }else {
+                if (isValidEmail(loginMobile)
+                        && isValidPassword(loginPassword)) {
+
                     LoginMethod(loginMobile,loginPassword);
+                } else {
+                    Toast.makeText(LoginActivity.this, "Validation failed. Please check your input.", Toast.LENGTH_SHORT).show();
                 }
+
+
             }
         });
 
@@ -108,9 +108,11 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (account != null) {
+        boolean isLoggedIn = SharedPrefManager.getInstance(getApplicationContext()).isLoggedIn();
+        if (account != null || isLoggedIn) {
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             startActivity(intent);
+            finish();
         }
     }
 
@@ -143,9 +145,6 @@ public class LoginActivity extends AppCompatActivity {
                             Intent intent=new Intent(LoginActivity.this,HomeActivity.class);
 
                             startActivity(intent);
-
-
-
                     }
                 }
             }

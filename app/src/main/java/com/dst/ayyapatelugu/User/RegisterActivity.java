@@ -65,6 +65,8 @@ public class RegisterActivity extends AppCompatActivity {
         butRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+
                 String name = edtFirstName.getText().toString().trim();
                 String lastname = edtLastName.getText().toString().trim();
                 String number = edtNumber.getText().toString().trim();
@@ -72,20 +74,16 @@ public class RegisterActivity extends AppCompatActivity {
                 String password = edtPassword.getText().toString().trim();
                 String reEnterPassword=edtReenterPassword.getText().toString().trim();
 
-                if (!isValidFirstName(name)){
+                if (isValidFirstName(name)
+                        && isValidLastName(lastname)
+                        && isValidEmail(email)
+                        && isValidMobileNumber(number)
+                        && isValidPassword(password)
+                        && doPasswordsMatch(password,reEnterPassword)) {
 
-                }else if(!isValidLastName(lastname)){
-
-                }else if (!isValidEmail(email)){
-                    edtEmail.setError("Invalid email address");
-                }else if (isValidMobileNumber(number)){
-
-                }else if (!isValidPassword(password)) {
-                    edtPassword.setError("Invalid password");
-                } else if (!doPasswordsMatch(password, reEnterPassword)) {
-                    Toast.makeText(RegisterActivity.this, "PassWord Doen't Match.", Toast.LENGTH_SHORT).show();
-                }else {
                     validationMethod(name, lastname, number, email, password);
+                } else {
+                    Toast.makeText(RegisterActivity.this, "Validation failed. Please check your input.", Toast.LENGTH_SHORT).show();
                 }
             }
         });

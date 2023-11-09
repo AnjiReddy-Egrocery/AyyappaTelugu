@@ -1,6 +1,7 @@
 package com.dst.ayyapatelugu.Adapter;
 
 import android.content.Context;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,11 @@ import com.dst.ayyapatelugu.Activity.CalenderActivity;
 import com.dst.ayyapatelugu.Model.CalenderDataResponse;
 import com.dst.ayyapatelugu.R;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class CalenderAdapter extends RecyclerView.Adapter<CalenderAdapter.MyViewHolder> {
     Context mContext;
@@ -35,17 +40,30 @@ public class CalenderAdapter extends RecyclerView.Adapter<CalenderAdapter.MyView
       CalenderDataResponse.Result.Poojas poojasList=poojas.get(position);
 
       String month=poojasList.getMonthName();
-      String openDate=poojasList.getOpeningDate();
+      long openDateTime=Long.parseLong(poojasList.getOpeningDate());
       String poojaName= poojasList.getPoojaName();
-      String closedDate=poojasList.getClosingDate();
+      long closedDateTime=Long.parseLong(poojasList.getClosingDate());
 
+        String formattedOpenDate="";
+        String formattedClosedDate="";
+
+        if (openDateTime != 0){
+            Date openDate=new Date(openDateTime * 1000);
+            SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MM-yyyy",Locale.getDefault());
+            formattedOpenDate=dateFormat.format(openDate);
+        }
+
+        if (closedDateTime != 0){
+            Date closedDate=new Date(closedDateTime * 1000);
+            SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MM-yyyy",Locale.getDefault());
+            formattedClosedDate=dateFormat.format(closedDate);
+        }
       holder.txtYear.setText(month);
-      holder.txtOpeningDate.setText(openDate);
+      holder.txtOpeningDate.setText(formattedOpenDate);
       holder.txtPoojaName.setText(poojaName);
-      holder.txtClosingDate.setText(closedDate);
+      holder.txtClosingDate.setText(formattedClosedDate);
 
     }
-
     @Override
     public int getItemCount() {
         return poojas.size();

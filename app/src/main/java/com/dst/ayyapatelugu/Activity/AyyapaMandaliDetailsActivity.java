@@ -1,15 +1,25 @@
 package com.dst.ayyapatelugu.Activity;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.text.HtmlCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.util.Linkify;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -70,15 +80,16 @@ public class AyyapaMandaliDetailsActivity extends AppCompatActivity {
         String number = bundle.getString("ItemNumber");
         String email = bundle.getString("ItemEmail");
         String discription = bundle.getString("Discription");
-
-
         txtname.setText(name);
         txtGuruName.setText(guruName);
         txtVillage.setText(village);
         txtNumber.setText(number);
         txtEmail.setText(email);
-        txtDiscription.setText(Html.fromHtml(Html.fromHtml(discription).toString()));
 
+        Spanned spanned=Html.fromHtml(discription);
+        String plainText=spanned.toString();
+        txtDiscription.setText(plainText);
+        Linkify.addLinks(txtDiscription,Linkify.WEB_URLS);
 
         String image_path = bundle.getString("imagePath");
         Picasso.get().load(image_path).into(imageView);

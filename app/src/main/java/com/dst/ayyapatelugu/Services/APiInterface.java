@@ -7,6 +7,7 @@ import com.dst.ayyapatelugu.Model.CalenderDataResponse;
 import com.dst.ayyapatelugu.Model.GuruSwamiList;
 import com.dst.ayyapatelugu.Model.KaryakarmamList;
 import com.dst.ayyapatelugu.Model.LoginDataResponse;
+import com.dst.ayyapatelugu.Model.MapDataResponse;
 import com.dst.ayyapatelugu.Model.UserDataResponse;
 import com.dst.ayyapatelugu.Model.VerifyUserDataResponse;
 import com.dst.ayyapatelugu.Model.YatraList;
@@ -15,6 +16,7 @@ import com.dst.ayyapatelugu.Model.decoratorListModel;
 
 import okhttp3.RequestBody;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
@@ -69,6 +71,8 @@ public interface APiInterface {
     @POST("APICalls/Calendar/index")
     Call<CalenderDataResponse> calenderData(@Part("year") RequestBody year);
 
+    @GET("APICalls/Annadhanams/Index")
+    Call<MapDataResponse> getMapList();
 
 
 
