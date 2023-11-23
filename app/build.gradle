@@ -5,6 +5,7 @@ plugins {
 
 
 android {
+
     namespace 'com.dst.ayyapatelugu'
     compileSdk 33
 
@@ -12,15 +13,31 @@ android {
         applicationId "com.dst.ayyapatelugu"
         minSdk 19
         targetSdk 33
-        versionCode 4
-        versionName "1.4"
+        versionCode 9
+        versionName '1.9'
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+    signingConfigs {
+        debug {
+            storeFile file('E://Decan Spark//A99//ayyappa.jks')
+            storePassword 'Test@123'
+            keyAlias 'key1'
+            keyPassword 'Test@123'
+        }
+        release  {
+            storeFile file('E://Decan Spark//A99//ayyappa.jks')
+            storePassword 'Test@123'
+            keyAlias 'key1'
+            keyPassword 'Test@123'
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -37,7 +54,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.android.material:material:1.2.0-alpha05'
+
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
@@ -55,4 +72,7 @@ dependencies {
 
     implementation 'com.google.android.gms:play-services-maps:18.0.0'
     implementation 'com.google.android.gms:play-services-location:18.0.0'
+    implementation 'com.google.maps.android:android-maps-utils:0.6+'
+    implementation 'com.google.maps.android:android-maps-utils:0.6.2'
+
 }

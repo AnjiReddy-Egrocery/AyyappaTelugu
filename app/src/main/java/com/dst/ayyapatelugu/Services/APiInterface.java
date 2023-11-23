@@ -1,5 +1,6 @@
 package com.dst.ayyapatelugu.Services;
 
+import com.dst.ayyapatelugu.Model.AyyappaTempleMapDataResponse;
 import com.dst.ayyapatelugu.Model.BajanaManadaliListModel;
 import com.dst.ayyapatelugu.Model.BajanaMandaliList;
 import com.dst.ayyapatelugu.Model.BooksListModel;
@@ -8,6 +9,8 @@ import com.dst.ayyapatelugu.Model.GuruSwamiList;
 import com.dst.ayyapatelugu.Model.KaryakarmamList;
 import com.dst.ayyapatelugu.Model.LoginDataResponse;
 import com.dst.ayyapatelugu.Model.MapDataResponse;
+import com.dst.ayyapatelugu.Model.SignUpWithGmail;
+import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
 import com.dst.ayyapatelugu.Model.UserDataResponse;
 import com.dst.ayyapatelugu.Model.VerifyUserDataResponse;
 import com.dst.ayyapatelugu.Model.YatraList;
@@ -22,6 +25,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
+import retrofit2.http.Query;
 
 public interface APiInterface {
 
@@ -73,6 +77,18 @@ public interface APiInterface {
 
     @GET("APICalls/Annadhanams/Index")
     Call<MapDataResponse> getMapList();
+
+    @GET("APICalls/Temples/Index")
+    Call<TempleMapDataResponse> getTempleMapList();
+
+    @GET("APICalls/Temples/ayyappaTemples")
+    Call<AyyappaTempleMapDataResponse> getAyyaooaTempleMapList();
+
+    @Multipart
+    @POST("APICalls/Users/loginWithGmail")
+    Call<SignUpWithGmail> PostSignUp(@Part("displayname") RequestBody displayname,
+                                     @Part("email") RequestBody email,
+                                     @Part("profilepic") RequestBody profilepic );
 
 
 

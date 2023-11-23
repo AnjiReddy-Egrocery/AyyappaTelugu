@@ -64,13 +64,15 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
     private APiInterface apiClient;
     private Context context;
 
-    private static final int SEARCH_RADIUS_METERS = 5000; // 5 km
-    String locations;
     ImageButton zoomInButton, zoomOutButton;
 
     private float currentZoomLevel = 15.0f;
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 101;
+
+    private LatLng userLocation;
+
+
 
 
     @SuppressLint("MissingInflatedId")
@@ -103,23 +105,15 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
         zoomInButton = findViewById(R.id.zoom_in_button);
         zoomOutButton = findViewById(R.id.zoom_out_button);
 
-       if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // Request location permissions here
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         } else {
-            // Permissions are granted, fetch the user's location
-            displayCurrentUserLocation();
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
-            if (mapFragment != null) {
-                mapFragment.getMapAsync(this);
-            } else {
-                Log.e("MapFragment", "Map fragment is null.");
-            }
+            initMap();
         }
-
         zoomInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,176 +140,102 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
                 .client(client)
                 .build();
         apiClient = retrofit.create(APiInterface.class);
-
-
     }
 
-    private void zoomOutMap() {
-        if (mMap != null){
-            currentZoomLevel -= 1.0f;
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
+    private void initMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        } else {
+
         }
     }
-
-    private void zoomInMap() {
-        if (mMap != null){
-            currentZoomLevel+=1.0f;
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
-        }
-    }
-
-     @Override
-     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                 // Location permission granted, display the user's current location
-                 displayCurrentUserLocation();
-             }
-         }
-     }
-    private void displayCurrentUserLocation() {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            return;
-        }
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, location -> {
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-
-                        // Create a LatLng object with the user's location
-                        LatLng userLocation = new LatLng(latitude, longitude);
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, currentZoomLevel));
-                    }
-                });
-    }
-
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap=googleMap;
+        mMap = googleMap;
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Location permission is granted
-            mMap.setMyLocationEnabled(true); // Enable the "My Location" blue dot on the map
+            mMap.setMyLocationEnabled(true);
             displayCurrentUserLocation();
+            if (mMap != null) {
+                fetchLocationDataAndAddMarkers();
+            } else {
+                Log.e("MapFragment", "GoogleMap object is null");
+            }
         } else {
             // Request location permissions here
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
+        setupMarkerClickListeners();
+    }
+    private void fetchLocationDataAndAddMarkers() {
+        // Assuming you have an API endpoint defined in your APiInterface
+        Call<MapDataResponse> call = apiClient.getMapList();
 
-
-        Call<MapDataResponse> call=apiClient.getMapList();
         call.enqueue(new Callback<MapDataResponse>() {
             @Override
             public void onResponse(Call<MapDataResponse> call, Response<MapDataResponse> response) {
+                if (response.isSuccessful()) {
+                    MapDataResponse mapDataResponse = response.body();
 
-                if(response.isSuccessful()){
-                    MapDataResponse mapDataResponse=response.body();
+                    if (mapDataResponse != null && mapDataResponse.getErrorCode().equals("200")) {
+                        List<MapDataResponse.Result> locations = mapDataResponse.getResult();
 
-                    if (mapDataResponse.getErrorCode().equals("200")){
-                        List<MapDataResponse.Result> list = mapDataResponse.getResult();
-
-                        for (int i = 0; i < list.size(); i++) {
-                            String latitudeStr = list.get(i).getLatitude();
-                            String longitudeStr = list.get(i).getLongitude();
-
-                            String name=list.get(i).getAnnadhanamNameTelugu();
-                            locations = list.get(i).getLocation();
-
-                            // Check if the latitude and longitude strings are not empty before parsing
-                            if (!latitudeStr.isEmpty() && !longitudeStr.isEmpty()) {
-                                double latitude = Double.parseDouble(latitudeStr);
-                                double longitude = Double.parseDouble(longitudeStr);
-
-                                LatLng location = new LatLng(latitude, longitude);
-                                String address = getAddressFromLocation(latitude, longitude);
-
-
-
-                                Marker marker = mMap.addMarker(new MarkerOptions()
-                                        .position(location)
-
-                                        .title(name));
-                                marker.setTag(address);
-
-
-                                mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
-                                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                                    @Override
-                                    public boolean onMarkerClick(Marker marker) {
-                                        // Show the info window for the clicked marker
-                                        marker.showInfoWindow();
-                                        return true; // Return true to consume the click event
-                                    }
-                                });
-
-                                // Handle the "Start Navigation" button click
-                                mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-                                    @Override
-                                    public void onInfoWindowClick(Marker marker) {
-                                        // Handle the start navigation button click here
-                                        // You can use the marker.getTitle() to get the Annadhanam Name
-                                        // and launch a navigation intent or perform any other action.
-                                        // Example: Start a navigation intent
-                                        startNavigation(marker.getPosition());
-                                    }
-                                });
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 5));
-                            }
-                        }
-
-
+                        // Add markers for each location
+                        addMarkers(locations);
                     }
+                } else {
 
                 }
-
             }
 
             @Override
             public void onFailure(Call<MapDataResponse> call, Throwable t) {
+                // Handle API request failure, e.g., network failure or request timeout
+            }
+        });
+    }
 
+    private void addMarkers(List<MapDataResponse.Result> locations) {
+        for (MapDataResponse.Result location : locations) {
+            double latitude = Double.parseDouble(location.getLatitude());
+            double longitude = Double.parseDouble(location.getLongitude());
+
+            String name = location.getAnnadhanamNameTelugu();
+            String locationAddress = getAddressFromLocation(latitude, longitude);
+
+            if (!locationAddress.equals("Address not found")) {
+                LatLng locationLatLng = new LatLng(latitude, longitude);
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(locationLatLng)
+                        .title(name)
+                );
+
+                marker.setTag(locationAddress);
+
+            }
+        }
+    }
+    private void setupMarkerClickListeners() {
+        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                marker.showInfoWindow();
+                return true;
             }
         });
 
-
-    }
-    private String getAddressFromLocation(double latitude, double longitude) {
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-        try {
-            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            if (!addresses.isEmpty()) {
-                Address address = addresses.get(0);
-                StringBuilder addressStr = new StringBuilder();
-                for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                    addressStr.append(address.getAddressLine(i)).append("\n");
-                }
-                return addressStr.toString().trim();
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                startNavigation(marker.getPosition());
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "Address not found";
-    }
-    private void startNavigation(LatLng position) {
-        String destinationStr = position.latitude + "," + position.longitude;
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destinationStr);
-
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        mapIntent.setPackage("com.google.android.apps.maps"); // Use the Google Maps app
-
-        if (mapIntent.resolveActivity(getPackageManager()) != null) {
-            startActivity(mapIntent);
-        } else {
-            // Handle the case where Google Maps is not installed on the device.
-            // You can open a web map or provide an alternative navigation solution.
-        }
+        });
     }
 
 
@@ -339,7 +259,7 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
             TextView title = mContentsView.findViewById(R.id.info_window_title);
             title.setText(marker.getTitle());
 
-            TextView txtLocation =mContentsView.findViewById(R.id.info_location);
+            TextView txtLocation = mContentsView.findViewById(R.id.info_location);
             String address = (String) marker.getTag();
             txtLocation.setText(address);
 
@@ -348,14 +268,97 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
             startNavigationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // Handle the "Start Navigation" button click here
-                    // You can use the marker.getPosition() to get the destination coordinates
-                    // and launch a navigation intent or perform any other action.
                     startNavigation(marker.getPosition());
                 }
             });
 
             return mContentsView;
+        }
+    }
+
+    private void startNavigation(LatLng position) {
+        String destinationStr = position.latitude + "," + position.longitude;
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destinationStr);
+
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps"); // Use the Google Maps app
+
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            Toast.makeText(this, "No navigation app installed. Please install a navigation app.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String getAddressFromLocation(double latitude, double longitude) {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            if (!addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                StringBuilder addressStr = new StringBuilder();
+                for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                    addressStr.append(address.getAddressLine(i)).append("\n");
+                }
+                return addressStr.toString().trim();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "Address not found";
+    }
+
+    private void zoomOutMap() {
+        if (mMap != null) {
+            currentZoomLevel -= 1.0f;
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
+        }
+    }
+
+    private void zoomInMap() {
+        if (mMap != null) {
+            currentZoomLevel += 1.0f;
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
+        }
+    }
+
+    private void displayCurrentUserLocation() {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        userLocation = new LatLng(latitude, longitude);
+                        if (mMap != null) {
+                            moveCameraToUserLocation();
+                        } else {
+                            // Handle the case when mMap is null
+                            initMap();
+                        }
+
+                    }
+                });
+    }
+
+    private void moveCameraToUserLocation() {
+        if (userLocation != null && mMap != null) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, currentZoomLevel));
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                displayCurrentUserLocation();
+            }
         }
     }
 

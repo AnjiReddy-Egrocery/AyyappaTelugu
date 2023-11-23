@@ -1,8 +1,11 @@
 package com.dst.ayyapatelugu;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import com.dst.ayyapatelugu.User.LoginActivity;
@@ -13,6 +16,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         Thread loading = new Thread() {
             public void run() {
@@ -30,5 +34,5 @@ public class SplashActivity extends AppCompatActivity {
 
         loading.start();
     }
-
 }
+

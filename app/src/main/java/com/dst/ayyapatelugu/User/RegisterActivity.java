@@ -14,9 +14,17 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.dst.ayyapatelugu.HomeActivity;
+import com.dst.ayyapatelugu.Model.SignUpWithGmail;
 import com.dst.ayyapatelugu.Model.UserDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 
 import java.util.List;
@@ -31,13 +39,19 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     LinearLayout layoutLogin;
     EditText edtFirstName, edtLastName, edtNumber, edtEmail, edtPassword, edtReenterPassword;
     Button butRegister;
 
+    LinearLayout linearSignUpWithGmail;
+
     boolean isAllFieldsChecked = false;
+
+    private GoogleApiClient mGoogleApiClient;
+    private static final int RC_SIGN_IN = 9001;
+    private static final int RC_SIGN_UP_WITH_GOOGLE = 9002;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -53,6 +67,23 @@ public class RegisterActivity extends AppCompatActivity {
         edtReenterPassword = findViewById(R.id.edt_reenter_password);
         layoutLogin = findViewById(R.id.layout_login);
         butRegister = findViewById(R.id.but_register);
+        linearSignUpWithGmail=findViewById(R.id.layout_signup_gmail);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        linearSignUpWithGmail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signUpWithGoogle(false);
+            }
+        });
 
         layoutLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,6 +118,11 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void signUpWithGoogle(boolean isSignUp) {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, isSignUp ? RC_SIGN_UP_WITH_GOOGLE : RC_SIGN_IN);
     }
 
     private boolean doPasswordsMatch(String password, String reEnterPassword) {
@@ -164,5 +200,129 @@ public class RegisterActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN || requestCode == RC_SIGN_UP_WITH_GOOGLE) {
+            GoogleSignInAccount account = handleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+            if (account != null) {
+                if (requestCode == RC_SIGN_IN) {
+                    // Handle Google Sign-In for Login
+                    handleSignInResult(account);
+                } else if (requestCode == RC_SIGN_UP_WITH_GOOGLE) {
+                    // Handle Google Sign-In for Sign Up
+                    performSignUp(account);
+                }
+            } else {
+                // Handle sign-in/sign-up failure
+                showToast("Failed to sign in/sign up. Please try again.");
+            }
+        }
+    }
+
+    private GoogleSignInAccount handleSignInResult(GoogleSignInResult signInResultFromIntent) {
+        if (signInResultFromIntent.isSuccess()) {
+            return signInResultFromIntent.getSignInAccount();
+        } else {
+            // Handle sign-in failure
+            return null;
+        }
+    }
+    private void handleSignInResult(GoogleSignInAccount account) {
+        // Handle the initial sign-in result
+        String displayName = account.getDisplayName();
+        String email = account.getEmail();
+        // Add your sign-in logic or navigate to the appropriate activity
+        showToast("Sign-in successful! Display Name: " + displayName + ", Email: " + email);
+
+        // Example: Navigate to HomeActivity for login
+        startActivity(new Intent(this, HomeActivity.class));
+        finish();
+    }
+    private void performSignUp(GoogleSignInAccount account) {
+        // Extract information from the account and perform sign-up
+
+        String displayName = account.getDisplayName();
+        String email = account.getEmail();
+        String profilepic= String.valueOf(account.getPhotoUrl());
+
+        // Now, send this information to your server for user registration
+        sendSignUpDataToServer(displayName, email, profilepic);
+    }
+
+    private void sendSignUpDataToServer(String displayName, String email, String profilepic) {
+
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+        APiInterface apiClient = retrofit.create(APiInterface.class);
+
+        RequestBody displayPar=RequestBody.create(MediaType.parse("text/plain"), displayName);
+        RequestBody emailPart=RequestBody.create(MediaType.parse("text/plain"), email);
+        RequestBody photoPart=RequestBody.create(MediaType.parse("text/plain"), profilepic);
+
+        Call<SignUpWithGmail> call=apiClient.PostSignUp(displayPar,emailPart,photoPart);
+        call.enqueue(new Callback<SignUpWithGmail>() {
+            @Override
+            public void onResponse(Call<SignUpWithGmail> call, Response<SignUpWithGmail> response) {
+                if (response.isSuccessful()){
+
+                    SignUpWithGmail signUpWithGmail=response.body();
+                    if (signUpWithGmail.getErrorCode().equals("200")){
+                        String displayName="";
+                        String email="";
+                        String photo="";
+                        List<SignUpWithGmail.Result> results=signUpWithGmail.getResult();
+                        for (int i=0; i<results.size(); i++){
+                            displayName =results.get(i).getFullName();
+                            email=results.get(i).getUserEmail();
+                            photo=results.get(i).getProfilePic();
+
+                            Log.e("Reddy", "displayname: " + displayName);
+                            Log.e("Reddy", "email: " + email);
+                            Log.e("Reddy", "photo: " + photo);
+
+                        }
+
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        intent.putExtra("displayname", displayName);
+                        intent.putExtra("email",email);
+                        intent.putExtra("profilepic",photo);
+                        startActivity(intent);
+
+
+                    }
+
+                }else {
+                    Toast.makeText(RegisterActivity.this, "Data Error", Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<SignUpWithGmail> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void showToast(final String message) {
+        runOnUiThread(() -> Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show());
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        // Connection failed, show error message
+        Toast.makeText(RegisterActivity.this,"Connection to Google Play services failed. Please try again.",Toast.LENGTH_LONG).show();
     }
 }
