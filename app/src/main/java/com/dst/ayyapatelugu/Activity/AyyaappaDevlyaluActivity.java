@@ -70,20 +70,15 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
     private float currentZoomLevel = 15.0f;
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 101;
-    private Context context;
+
     private LatLng userLocation;
 
-    List<AyyappaTempleMapDataResponse.Result> ayyappatemples;
+    private Context context;
 
-    private static final double INITIAL_RADIUS = 5000; // 5km
-    private double currentRadius = INITIAL_RADIUS;
+    private static final float ZOOM_LEVEL_IN = 1.0f;
+    private static final float ZOOM_LEVEL_OUT = -1.0f;
 
-    private Handler handler = new Handler();
-    private Runnable fetchMarkersRunnable;
-    private boolean isMapReady = false;
-
-    private static final float THRESHOLD_ZOOM_LEVEL = 1.0f;
-
+    private static final float ZOOM_THRESHOLD = 1.0f;
 
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -165,55 +160,14 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-
-        isMapReady = true;
-
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-
-        // Set the map type (e.g., normal, hybrid, satellite)
-        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-
-        // Enable the compass
-        mMap.getUiSettings().setCompassEnabled(true);
-
-        // Enable the my location button
-        mMap.getUiSettings().setMyLocationButtonEnabled(true);
-
-        // Customize the info window adapter if needed
-        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
-
         // Check if location permission is granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Location permission is granted
             mMap.setMyLocationEnabled(true);
             displayCurrentUserLocation();
+            setupMarkerClickListeners();
+            fetchLocationDataAndAddMarkers();
 
-            if (mMap != null) {
-                // Set the OnCameraIdleListener only if mMap is not null
-                mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
-                    @Override
-                    public void onCameraIdle() {
-                        float currentZoomLevel = mMap.getCameraPosition().zoom;
-                        Log.e("Reddy", "Current Zoom Level: " + currentZoomLevel);
-                        if (currentZoomLevel >= THRESHOLD_ZOOM_LEVEL) {
-                            LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
-                            Log.e("Reddy", "Bounds: " + bounds.toString());
-                            currentRadius = calculateRadius(bounds);
-                            Log.e("Reddy", "Current Radius: " + currentRadius);
-                            fetchLocationDataAndAddMarkers(currentRadius);
-
-                        }else {
-                            mMap.clear();
-                        }
-
-                    }
-                });
-                if (isMapReady) {
-                    fetchLocationDataAndAddMarkers(currentRadius);
-                }
-            } else {
-                Log.e("MapFragment", "GoogleMap object is null");
-            }
         } else {
             // Request location permissions here
             ActivityCompat.requestPermissions(this,
@@ -221,18 +175,18 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
 
-        setupMarkerClickListeners();
-    }
+        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                float newZoomLevel = mMap.getCameraPosition().zoom;
+                if (Math.abs(newZoomLevel - currentZoomLevel) > ZOOM_THRESHOLD) {
+                    // Update markers or perform other actions based on zoom level change
+                    currentZoomLevel = newZoomLevel;
 
-    private double calculateRadius(LatLngBounds bounds) {
-        float[] result = new float[1];
-        Log.e("Reddy", "Bounds: " + result);
-        Location.distanceBetween(bounds.getCenter().latitude, bounds.getCenter().longitude,
-                bounds.northeast.latitude, bounds.northeast.longitude, result);
-        Log.e("Reddy", "Bounds: " + result);
-        return result[0];
+                }
+            }
+        });
     }
-
 
     private void displayCurrentUserLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -268,8 +222,7 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                zoomInOnMarker(marker);
-                marker.showInfoWindow();
+               marker.showInfoWindow();
                 return true;
             }
         });
@@ -282,107 +235,33 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
         });
     }
 
-    private void zoomInOnMarker(Marker marker) {
-        LatLng markerPosition = marker.getPosition();
+  private void fetchLocationDataAndAddMarkers() {
+      Call<AyyappaTempleMapDataResponse> call = apiClient.getAyyaooaTempleMapList();
+      call.enqueue(new Callback<AyyappaTempleMapDataResponse>() {
+          @Override
+          public void onResponse(Call<AyyappaTempleMapDataResponse> call, Response<AyyappaTempleMapDataResponse> response) {
+              if (response.isSuccessful()) {
+                  AyyappaTempleMapDataResponse ayyappaTempleMapDataResponse = response.body();
+                  if (ayyappaTempleMapDataResponse != null && ayyappaTempleMapDataResponse.getErrorCode().equals("200")) {
+                     List<AyyappaTempleMapDataResponse.Result> ayyappatemples = ayyappaTempleMapDataResponse.getResult();
 
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(markerPosition)
-                .zoom(17.0f)
-                .build();
+                      addMarkers(ayyappatemples);
+                  } else {
+                      Log.e("API Response", "Invalid response: " + response.code());
+                  }
+              }
+          }
 
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+          @Override
+          public void onFailure(Call<AyyappaTempleMapDataResponse> call, Throwable t) {
+              Log.e("API Response", "Error fetching data: " + t.getMessage());
+          }
+      });
     }
-
-
-    private void fetchLocationDataAndAddMarkers(double radius) {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, location -> {
-                    if (location != null) {
-                        double currentLatitude = location.getLatitude();
-                        double currentLongitude = location.getLongitude();
-                        if (isMapReady) {
-                            LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
-                            double newRadius = calculateRadius(bounds);
-                            if (currentZoomLevel >= THRESHOLD_ZOOM_LEVEL) {
-                                // Show markers
-                                addMarkers(ayyappatemples);
-                            } else {
-                                // Hide markers
-                                mMap.clear();
-                            }
-                            Call<AyyappaTempleMapDataResponse> call = apiClient.getAyyaooaTempleMapList();
-                            call.enqueue(new Callback<AyyappaTempleMapDataResponse>() {
-                                @Override
-                                public void onResponse(Call<AyyappaTempleMapDataResponse> call, Response<AyyappaTempleMapDataResponse> response) {
-                                    if (response.isSuccessful()) {
-                                        AyyappaTempleMapDataResponse ayyappaTempleMapDataResponse = response.body();
-                                        if (ayyappaTempleMapDataResponse != null && ayyappaTempleMapDataResponse.getErrorCode().equals("200")) {
-                                            ayyappatemples = ayyappaTempleMapDataResponse.getResult();
-                                            List<AyyappaTempleMapDataResponse.Result> nearbyTemples = filterTemplesByRadius(ayyappatemples, currentLatitude, currentLongitude, newRadius);
-                                            mMap.clear();
-                                            ayyappatemples = nearbyTemples;
-                                            addMarkers(ayyappatemples);
-                                        } else {
-                                            Log.e("API Response", "Invalid response: " + response.code());
-                                        }
-                                    }
-                                }
-
-                                @Override
-                                public void onFailure(Call<AyyappaTempleMapDataResponse> call, Throwable t) {
-                                    Log.e("API Response", "Error fetching data: " + t.getMessage());
-                                }
-                            });
-                        }
-                    }
-                });
-    }
-
-
-
-    private List<AyyappaTempleMapDataResponse.Result> filterTemplesByRadius(List<AyyappaTempleMapDataResponse.Result> ayyappatemples, double currentLatitude, double currentLongitude, double radius) {
-        List<AyyappaTempleMapDataResponse.Result> nearbyTemples = new ArrayList<>();
-        for (AyyappaTempleMapDataResponse.Result temple : ayyappatemples) {
-            double templeLatitude = Double.parseDouble(temple.getLatitude());
-            double templeLongitude = Double.parseDouble(temple.getLongitude());
-
-            float[] distance = new float[1];
-            Location.distanceBetween(currentLatitude, currentLongitude, templeLatitude, templeLongitude, distance);
-
-            if (distance[0] <= radius) {
-                nearbyTemples.add(temple);
-
-            }
-        }
-        return nearbyTemples;
-    }
-
-
     private void addMarkers(List<AyyappaTempleMapDataResponse.Result> ayyappatemples) {
-        if (ayyappatemples != null && mMap != null) {
-            for (AyyappaTempleMapDataResponse.Result location : ayyappatemples) {
-                double latitude = Double.parseDouble(location.getLatitude());
-                double longitude = Double.parseDouble(location.getLongitude());
-                String name = location.getTempleNameTelugu();
-                String locationAddress = getAddressFromLocation(latitude, longitude);
-
-                if (!locationAddress.equals("Address not found")) {
-                    LatLng locationLatLng = new LatLng(latitude, longitude);
-
-                    Marker marker = mMap.addMarker(new MarkerOptions()
-                            .position(locationLatLng)
-                            .title(name)
-                    );
-
-                    marker.setTag(locationAddress);
-                }
-            }
+        if(mMap != null) {
+            DrawMarkersTask drawMarkersTask = new DrawMarkersTask(ayyappatemples);
+            drawMarkersTask.execute();
         }
     }
 
@@ -409,8 +288,8 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
             title.setText(marker.getTitle());
 
             TextView txtLocation = mContentsView.findViewById(R.id.ayyappa_location);
-            String address = (String) marker.getTag();
-            txtLocation.setText(address);
+            //String address = (String) marker.getTag();
+            txtLocation.setText(marker.getSnippet());
 
             // Handle the "Start Navigation" button click
             Button startNavigationButton = mContentsView.findViewById(R.id.start_navigation);
@@ -458,16 +337,15 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
 
     private void zoomOutMap() {
         if (mMap != null) {
-            currentZoomLevel -= 1.0f;
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
-
+            float newZoomLevel = mMap.getCameraPosition().zoom + ZOOM_LEVEL_OUT;
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(newZoomLevel));
         }
     }
 
     private void zoomInMap() {
         if (mMap != null) {
-            currentZoomLevel += 1.0f;
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
+            float newZoomLevel = mMap.getCameraPosition().zoom + ZOOM_LEVEL_IN;
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(newZoomLevel));
         }
     }
     @Override
@@ -476,28 +354,58 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                displayCurrentUserLocation();
+                // Permission granted, initialize the map
+                initMap();
+                // Fetch and update temple data
+                //viewModel.fetchTempleData(apiClient);
+            } else {
+                // Permission denied, show a message or take appropriate action
+                Toast.makeText(this, "Location permission denied. Map functionality may be limited.", Toast.LENGTH_SHORT).show();
             }
         }
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Reload map and markers when the activity is resumed
-        if (mMap == null) {
-            initMap();
-        } else {
-            // Check if location permission is granted
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                // Location permission is granted
-                mMap.setMyLocationEnabled(true);
-                displayCurrentUserLocation();
-            } else {
-                // Request location permissions here
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        LOCATION_PERMISSION_REQUEST_CODE);
+    public class DrawMarkersTask extends AsyncTask<Void, MarkerOptions, Void> {
+        List<AyyappaTempleMapDataResponse.Result> myAyyappaTemples;
+        public DrawMarkersTask(List<AyyappaTempleMapDataResponse.Result> ayyappatemples) {
+            myAyyappaTemples=ayyappatemples;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            mMap.clear();
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15.0f));
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            for (int i = 0; i < myAyyappaTemples.size(); i++ ){
+                MarkerOptions markerOptions = new MarkerOptions().position(
+                        new LatLng(Double.parseDouble(myAyyappaTemples.get(i)
+                                .getLatitude()), Double
+                                .parseDouble(myAyyappaTemples.get(i)
+                                        .getLongitude()))).title(
+                        myAyyappaTemples.get(i).getTempleNameTelugu()).snippet(
+                        myAyyappaTemples.get(i).getLocation());
+
+                publishProgress(markerOptions); // pass it for the main UI thread for displaying
+                try {
+                    Thread.sleep(50); // sleep for 50 ms so that main UI thread can handle user actions in the meantime
+                } catch (InterruptedException e) {
+                    // NOP (no operation)
+                }
             }
+
+            return null;
+        }
+
+        protected void onProgressUpdate(MarkerOptions... markerOptions) {
+            // this executes in main ui thread so you can add prepared marker to your map
+            mMap.addMarker(markerOptions[0]);
+        }
+
+        protected void onPostExecute(Void result) {
+
         }
     }
 
