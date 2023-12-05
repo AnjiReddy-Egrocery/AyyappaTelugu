@@ -67,19 +67,37 @@
                 android:background="@drawable/editext_border"
                 android:drawableLeft="@drawable/baseline_perm_identity_24"/>
 
-            <EditText
+            <RelativeLayout
+                android:id="@+id/laypass"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:id="@+id/edt_password"
-                android:inputType="textPassword"
-                android:hint="Password"
-                android:layout_marginTop="16dp"
-                android:drawablePadding="10dp"
-                android:paddingLeft="10dp"
-                android:textColor="#000"
-                android:textColorHint="#000"
-                android:background="@drawable/editext_border"
-                android:drawableLeft="@drawable/baseline_lock_24"/>
+                android:layout_marginTop="16dp">
+
+                <EditText
+                    android:id="@+id/edt_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/editext_border"
+                    android:drawableLeft="@drawable/baseline_lock_24"
+                    android:drawablePadding="10dp"
+                    android:hint="Password"
+                    android:inputType="textPassword"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="15dp"
+                    android:textColor="#000"
+                    android:textColorHint="#000"/>
+
+                <ImageView
+                    android:id="@+id/show_pass_btn"
+                    android:layout_width="35dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="8dp"
+                    android:onClick="ShowHidePass"
+                    android:padding="5dp"
+                    android:src="@drawable/visiablity" />
+            </RelativeLayout>
 
             <Button
                 android:layout_width="match_parent"
@@ -130,7 +148,7 @@
                 android:id="@+id/txt_create"/>
 
 
-            <LinearLayout
+          <!--  <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:background="@drawable/gmail_background"
@@ -159,7 +177,7 @@
                     android:textColor="#FFF"
                     android:textStyle="bold"/>
 
-            </LinearLayout>
+            </LinearLayout>-->
         </LinearLayout>
     </RelativeLayout>
 

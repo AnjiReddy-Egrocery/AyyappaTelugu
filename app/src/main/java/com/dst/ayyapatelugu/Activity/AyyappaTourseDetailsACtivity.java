@@ -7,16 +7,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import com.dst.ayyapatelugu.Adapter.AyyappaTourseDetailsAdapter;
+
+import com.dst.ayyapatelugu.DataBase.SharedPreferencesManager;
 import com.dst.ayyapatelugu.Model.YatraList;
 import com.dst.ayyapatelugu.Model.YatraListModel;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.google.gson.Gson;
 
 
 import java.util.ArrayList;
@@ -67,10 +74,20 @@ public class AyyappaTourseDetailsACtivity extends AppCompatActivity {
                 finish();
             }
         });
-
         recyclerView = findViewById(R.id.frecycler_tourse_list);
+        yatraListModels=new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+        YatraList savedYatraList = SharedPreferencesManager.getYatraList(this);
+        if (savedYatraList != null) {
+            yatraListModels = new ArrayList<>(Arrays.asList(savedYatraList.getResult()));
+            ayyappaTourseDetailsAdapter = new AyyappaTourseDetailsAdapter(AyyappaTourseDetailsACtivity.this, yatraListModels);
+            recyclerView.setAdapter(ayyappaTourseDetailsAdapter);
+        }
+        fetchDataFromApi();
+    }
+
+    private void fetchDataFromApi() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
@@ -89,16 +106,26 @@ public class AyyappaTourseDetailsACtivity extends AppCompatActivity {
             public void onResponse(Call<YatraList> call, Response<YatraList> response) {
                 YatraList yatraList = response.body();
                 yatraListModels = new ArrayList<>(Arrays.asList(yatraList.getResult()));
+
+                // Save YatraList object to SharedPreferences
+                 SharedPreferencesManager.saveYatraList(AyyappaTourseDetailsACtivity.this, yatraList);
+
                 ayyappaTourseDetailsAdapter = new AyyappaTourseDetailsAdapter(AyyappaTourseDetailsACtivity.this, yatraListModels);
                 recyclerView.setAdapter(ayyappaTourseDetailsAdapter);
             }
 
             @Override
             public void onFailure(Call<YatraList> call, Throwable t) {
-
+                if (yatraListModels != null && !yatraListModels.isEmpty()) {
+                    Toast.makeText(AyyappaTourseDetailsACtivity.this,"Failed to fetch new data. Using cached data.",Toast.LENGTH_SHORT).show();
+                } else {
+                    // Handle failure when no cached data is available
+                    Toast.makeText(AyyappaTourseDetailsACtivity.this,"Failed to fetch data. Please check your network connection.",Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
-
     }
+
+
 }

@@ -7,18 +7,30 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 
 import com.dst.ayyapatelugu.Adapter.AyyappaPetamListAdapteer;
+
 import com.dst.ayyapatelugu.Model.decoratorListModel;
 import com.dst.ayyapatelugu.Model.decoratormodelResult;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,10 +46,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class AyyappaPetamListActivity extends AppCompatActivity {
 
     Toolbar toolbar;
-    List<decoratormodelResult> decoratorList;
+    private List<decoratormodelResult> decoratorList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private AyyappaPetamListAdapteer ayyappaPetamListAdapteer;
 
-    RecyclerView recyclerView;
-    AyyappaPetamListAdapteer ayyappaPetamListAdapteer;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
@@ -66,10 +78,26 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
             }
         });
 
-
         recyclerView = findViewById(R.id.recycler_decorator);
+        decoratorList=new ArrayList<>();
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(layoutManager);
+        List<decoratormodelResult> cachedData = loadDataFromSharedPreferences();
+
+        if (cachedData != null && !cachedData.isEmpty()) {
+            // Data is available in SharedPreferences, use it
+            decoratorList.addAll(cachedData);
+            updateRecyclerView();  // This line updates the RecyclerView immediately
+        }
+
+        if (cachedData == null || cachedData.isEmpty()) {
+            fetchDataFromApiAndSaveToSQLite();
+        }
+
+    }
+
+
+    private void fetchDataFromApiAndSaveToSQLite() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
@@ -83,20 +111,63 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
         APiInterface apiClient = retrofit.create(APiInterface.class);
         Call<decoratorListModel> call = apiClient.getDecoratorsList();
 
+
         call.enqueue(new Callback<decoratorListModel>() {
             @Override
             public void onResponse(Call<decoratorListModel> call, Response<decoratorListModel> response) {
-                decoratorListModel dectors = response.body();
-                decoratorList = new ArrayList<>(Arrays.asList(dectors.getResult()));
-                ayyappaPetamListAdapteer = new AyyappaPetamListAdapteer(AyyappaPetamListActivity.this, decoratorList);
-                recyclerView.setAdapter(ayyappaPetamListAdapteer);
-            }
+                if (response.isSuccessful()) {
+                    decoratorListModel decorators = response.body();
+                    decoratorList = new ArrayList<>(Arrays.asList(decorators.getResult()));
 
+
+                    // Save data to SharedPreferences
+                    saveDataToSharedPreferences(decoratorList);
+                    updateRecyclerView();
+                    // Save data to SQLite dat updateRecyclerView();abase
+
+
+                } else {
+                    Log.e("SQLite", "Error: " + response.code() + " " + response.message());
+                }
+            }
             @Override
             public void onFailure(Call<decoratorListModel> call, Throwable t) {
+                // Handle API failure if needed
+                Log.e("SQLite", "API call failed: " + t.getMessage());
+                List<decoratormodelResult> cachedData = loadDataFromSharedPreferences();
+                if (cachedData != null && !cachedData.isEmpty()) {
+                    decoratorList.addAll(cachedData);
+                    updateRecyclerView();
+                }
+
 
             }
         });
+    }
 
+    private void updateRecyclerView() {
+        ayyappaPetamListAdapteer = new AyyappaPetamListAdapteer(AyyappaPetamListActivity.this, decoratorList);
+        recyclerView.setAdapter(ayyappaPetamListAdapteer);
+    }
+
+
+    private void saveDataToSharedPreferences(List<decoratormodelResult> decoratorList) {
+        SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        Gson gson = new Gson();
+        String json = gson.toJson(decoratorList);
+
+        editor.putString("decoratorList", json);
+        editor.apply();
+    }
+
+    private List<decoratormodelResult> loadDataFromSharedPreferences() {
+        SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("decoratorList", null);
+
+        Type type = new TypeToken<List<decoratormodelResult>>() {}.getType();
+        return gson.fromJson(json, type);
     }
 }

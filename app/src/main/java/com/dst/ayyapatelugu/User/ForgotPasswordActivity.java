@@ -8,14 +8,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.dst.ayyapatelugu.R;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
-    EditText edtMobileNum;
-    Button butSendOtp;
-    boolean isAllFieldsChecked = false;
+    Button changePasswordButton;
+    EditText newPasswordEditText,confirmPasswordEditText;
+
+    String newPassword,confirmPassword;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -23,33 +25,32 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
 
-        edtMobileNum = findViewById(R.id.edt_mobile_num);
-        butSendOtp = findViewById(R.id.but_send_otp);
+        changePasswordButton = findViewById(R.id.but_change_pwd);
 
-        butSendOtp.setOnClickListener(new View.OnClickListener() {
+        changePasswordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isAllFieldsChecked = CheckAllFields();
-                if (isAllFieldsChecked) {
-                    Intent i = new Intent(ForgotPasswordActivity.this, ResetPasswordActivity.class);
-                    startActivity(i);
+
+                newPasswordEditText = findViewById(R.id.edt_new_ped);
+                confirmPasswordEditText = findViewById(R.id.edt_confirm_ped);
+
+                newPassword = newPasswordEditText.getText().toString();
+                confirmPassword = confirmPasswordEditText.getText().toString();
+
+                if (isValidPasswordChange(newPassword, confirmPassword)) {
+                    // Display a success message or navigate to login page
+                    Toast.makeText(ForgotPasswordActivity.this, "Password changed successfully", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(ForgotPasswordActivity.this, LoginActivity.class));
+                } else {
+                    // Display an error message or handle the password change failure
+                    Toast.makeText(ForgotPasswordActivity.this, "Invalid password change", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
     }
 
-    private boolean CheckAllFields() {
-        boolean valid = true;
-        String number = edtMobileNum.getText().toString();
-
-        if (number.isEmpty() || number.length() < 10 || number.length() > 10) {
-            edtMobileNum.setError("Please Enter Valid Mobile Number");
-            valid = false;
-        } else {
-            edtMobileNum.setError(null);
-        }
-
-
-        return valid;
+    private boolean isValidPasswordChange(String newPassword, String confirmPassword) {
+        return newPassword.equals(confirmPassword);
     }
 }

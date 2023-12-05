@@ -17,5 +17,7 @@
     <string name="ayyappa_details" translatable="false">మా గురించి</string>
     <string name="title_tool_bar" translatable="false">స్వామి శరణం అయ్యప్ప</string>
 
+    <string name="API_KEY" translatable="false">AIzaSyBFF-2pTBlXSj8AhJPOKduLVPvkpm2TnEs</string>
+
 
 </resources>

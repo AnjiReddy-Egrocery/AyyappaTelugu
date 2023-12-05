@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -49,6 +51,11 @@ public class CalenderActivity extends AppCompatActivity {
     private  String nextYear="";
     CalenderAdapter calenderAdapter;
     ImageView imageLeft,imageRight;
+
+    private static final String PREF_NAME = "CalendarPrefs";
+    private static final String KEY_CURRENT_YEAR = "currentYear";
+    private static final String KEY_PREVIOUS_YEAR = "previousYear";
+    private static final String KEY_NEXT_YEAR = "nextYear";
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
     @Override
@@ -78,6 +85,8 @@ public class CalenderActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+
 
         imageRight.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,16 +149,21 @@ public class CalenderActivity extends AppCompatActivity {
 
                 } else if (dataResponse.getErrorCode().equals("200")) {
 
-
-
                     List<CalenderDataResponse.Result> results=dataResponse.getResult();
                     for (int i = 0; i < results.size(); i++) {
                         currentYear=results.get(i).getYear();
                         previousYear=results.get(i).getPrevYear();
                         nextYear=results.get(i).getNextYear();
+
                         List<CalenderDataResponse.Result.Poojas> topicsList = results.get(i).getPoojasList();
                         calenderAdapter = new CalenderAdapter(CalenderActivity.this, topicsList);
                         recyclerView.setAdapter(calenderAdapter);
+
+                        // Save data to SharedPreferences
+                        saveToSharedPreferences(currentYear, previousYear, nextYear);
+
+                        // Retrieve data from SharedPreferences
+                        retrieveFromSharedPreferences();
                     }
                     txtYear.setText(currentYear);
                 } else {
@@ -163,5 +177,25 @@ public class CalenderActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void retrieveFromSharedPreferences() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String storedCurrentYear = sharedPreferences.getString(KEY_CURRENT_YEAR, "");
+        String storedPreviousYear = sharedPreferences.getString(KEY_PREVIOUS_YEAR, "");
+        String storedNextYear = sharedPreferences.getString(KEY_NEXT_YEAR, "");
+
+        // Use the stored values as needed
+        txtYear.setText(storedCurrentYear);
+    }
+
+    private void saveToSharedPreferences(String currentYear, String previousYear, String nextYear) {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_CURRENT_YEAR, currentYear);
+        editor.putString(KEY_PREVIOUS_YEAR, previousYear);
+        editor.putString(KEY_NEXT_YEAR, nextYear);
+        editor.apply();
     }
 }

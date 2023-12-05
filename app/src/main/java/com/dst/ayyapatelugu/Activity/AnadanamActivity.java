@@ -1,5 +1,6 @@
 package com.dst.ayyapatelugu.Activity;
 
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -16,9 +17,9 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
+
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,23 +29,23 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dst.ayyapatelugu.DataBase.SharedPreferenceHelper;
+
 import com.dst.ayyapatelugu.Model.MapDataResponse;
+
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -71,6 +72,13 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 101;
 
     private LatLng userLocation;
+
+    private static final float ZOOM_THRESHOLD = 1.0f;
+
+    private static final float ZOOM_LEVEL_IN = 1.0f;
+    private static final float ZOOM_LEVEL_OUT = -1.0f;
+
+    private List<MapDataResponse.Result> mapList;
 
 
 
@@ -129,6 +137,7 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
 
         context = this;
 
+
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
@@ -157,6 +166,7 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Location permission is granted
             mMap.setMyLocationEnabled(true);
+            setupMarkerClickListeners();
             displayCurrentUserLocation();
             if (mMap != null) {
                 fetchLocationDataAndAddMarkers();
@@ -169,56 +179,69 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
-        setupMarkerClickListeners();
-    }
-    private void fetchLocationDataAndAddMarkers() {
-        // Assuming you have an API endpoint defined in your APiInterface
-        Call<MapDataResponse> call = apiClient.getMapList();
+        float initialZoomLevel = SharedPreferenceHelper.getZoomLevel(this);
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(initialZoomLevel));
 
-        call.enqueue(new Callback<MapDataResponse>() {
+        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
-            public void onResponse(Call<MapDataResponse> call, Response<MapDataResponse> response) {
-                if (response.isSuccessful()) {
-                    MapDataResponse mapDataResponse = response.body();
+            public void onCameraIdle() {
+                float newZoomLevel = mMap.getCameraPosition().zoom;
+                if (Math.abs(newZoomLevel - currentZoomLevel) > ZOOM_THRESHOLD) {
+                    // Update markers or perform other actions based on zoom level change
+                    currentZoomLevel = newZoomLevel;
 
-                    if (mapDataResponse != null && mapDataResponse.getErrorCode().equals("200")) {
-                        List<MapDataResponse.Result> locations = mapDataResponse.getResult();
-
-                        // Add markers for each location
-                        addMarkers(locations);
-                    }
-                } else {
+                    SharedPreferenceHelper.setZoomLevel(AnadanamActivity.this, newZoomLevel);
 
                 }
             }
-
-            @Override
-            public void onFailure(Call<MapDataResponse> call, Throwable t) {
-                // Handle API request failure, e.g., network failure or request timeout
-            }
         });
+    }
+    private void fetchLocationDataAndAddMarkers() {
+        mapList = SharedPreferenceHelper.getTempleData(this);
+
+        if (mapList != null && !mapList.isEmpty()) {
+            addMarkers(mapList);
+        } else {
+
+            Call<MapDataResponse> call = apiClient.getMapList();
+
+            call.enqueue(new Callback<MapDataResponse>() {
+                @Override
+                public void onResponse(Call<MapDataResponse> call, Response<MapDataResponse> response) {
+                    if (response.isSuccessful()) {
+                        MapDataResponse mapDataResponse = response.body();
+
+                        if (mapDataResponse != null && mapDataResponse.getErrorCode().equals("200")) {
+                            List<MapDataResponse.Result> locations = mapDataResponse.getResult();
+
+
+                            // Add markers for each location
+                            addMarkers(locations);
+
+                            SharedPreferenceHelper.saveTempleData(AnadanamActivity.this, mapList);
+                        }
+                    } else {
+                        // Handle unsuccessful response
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<MapDataResponse> call, Throwable t) {
+                    // Handle API request failure, e.g., network failure or request timeout
+                }
+            });
+
+        }
+        // Assuming you have an API endpoint defined in your APiInterface
+
     }
 
     private void addMarkers(List<MapDataResponse.Result> locations) {
-        for (MapDataResponse.Result location : locations) {
-            double latitude = Double.parseDouble(location.getLatitude());
-            double longitude = Double.parseDouble(location.getLongitude());
-
-            String name = location.getAnnadhanamNameTelugu();
-            String locationAddress = getAddressFromLocation(latitude, longitude);
-
-            if (!locationAddress.equals("Address not found")) {
-                LatLng locationLatLng = new LatLng(latitude, longitude);
-
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .position(locationLatLng)
-                        .title(name)
-                );
-
-                marker.setTag(locationAddress);
-
-            }
+        if(mMap != null) {
+            DrawMarkersTask drawMarkersTask = new DrawMarkersTask(locations);
+            drawMarkersTask.execute();
         }
+
     }
     private void setupMarkerClickListeners() {
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
@@ -310,15 +333,16 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
 
     private void zoomOutMap() {
         if (mMap != null) {
-            currentZoomLevel -= 1.0f;
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
+
+            float newZoomLevel = mMap.getCameraPosition().zoom + ZOOM_LEVEL_OUT;
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(newZoomLevel));
         }
     }
 
     private void zoomInMap() {
         if (mMap != null) {
-            currentZoomLevel += 1.0f;
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(currentZoomLevel));
+            float newZoomLevel = mMap.getCameraPosition().zoom + ZOOM_LEVEL_IN;
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(newZoomLevel));
         }
     }
 
@@ -359,6 +383,55 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 displayCurrentUserLocation();
             }
+        }
+    }
+
+
+    public class DrawMarkersTask extends AsyncTask<Void, MarkerOptions, Void> {
+        List<MapDataResponse.Result> myTempleList;
+
+        public DrawMarkersTask(List<MapDataResponse.Result> locations) {
+            myTempleList = locations;
+        }
+
+
+
+        protected void onPreExecute() {
+            // this method executes in UI thread
+            mMap.clear();
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15.0f));
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            // this method executes in separate background thread
+            // you CANT modify UI here
+            for (int i = 0; i < myTempleList.size(); i++) {
+                MarkerOptions markerOptions = new MarkerOptions().position(
+                        new LatLng(Double.parseDouble(myTempleList.get(i)
+                                .getLatitude()), Double
+                                .parseDouble(myTempleList.get(i)
+                                        .getLongitude()))).title(
+                        myTempleList.get(i).getAnnadhanamNameTelugu()).snippet(
+                        myTempleList.get(i).getLocation());
+
+                publishProgress(markerOptions); // pass it for the main UI thread for displaying
+                try {
+                    Thread.sleep(50); // sleep for 50 ms so that main UI thread can handle user actions in the meantime
+                } catch (InterruptedException e) {
+                    // NOP (no operation)
+                }
+            }
+            return null;
+        }
+
+        protected void onProgressUpdate(MarkerOptions... markerOptions) {
+            // this executes in main ui thread so you can add prepared marker to your map
+            mMap.addMarker(markerOptions[0]);
+        }
+
+        protected void onPostExecute(Void result) {
+
         }
     }
 

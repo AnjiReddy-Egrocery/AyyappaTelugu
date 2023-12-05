@@ -7,12 +7,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import com.dst.ayyapatelugu.Adapter.AyyappaBooksListAdapter;
+
+import com.dst.ayyapatelugu.DataBase.SharedPreferencesManager;
 import com.dst.ayyapatelugu.Model.BooksListModel;
 import com.dst.ayyapatelugu.Model.BooksModelResult;
 
@@ -69,10 +75,28 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
                 finish();
             }
         });
-
         recyclerView = findViewById(R.id.recycler_books);
+        bookList = new ArrayList<>();  // Initialize bookList
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+
+        fetchDataFromSharedPreferences();
+    }
+
+    private void fetchDataFromSharedPreferences() {
+        List<BooksModelResult> storedBookList = SharedPreferencesManager.getBookList(AyyapaBooksListActivity.this);
+
+        if (storedBookList != null && !storedBookList.isEmpty()) {
+            // Data exists in SharedPreferences, update RecyclerView
+            updateRecyclerView(storedBookList);
+        } else {
+            // Data doesn't exist in SharedPreferences, fetch from the network
+            fetchDataFromDataBase();
+        }
+    }
+
+    private void fetchDataFromDataBase() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
@@ -90,16 +114,25 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
             public void onResponse(Call<BooksListModel> call, Response<BooksListModel> response) {
                 BooksListModel listModel = response.body();
                 bookList = new ArrayList<>(Arrays.asList(listModel.getResult()));
-                ayyappaBooksListAdapter = new AyyappaBooksListAdapter(AyyapaBooksListActivity.this, bookList);
-                recyclerView.setAdapter(ayyappaBooksListAdapter);
+
+                SharedPreferencesManager.saveBookList(AyyapaBooksListActivity.this, bookList);
+
+                updateRecyclerView(bookList);
             }
 
             @Override
             public void onFailure(Call<BooksListModel> call, Throwable t) {
-
+                bookList = SharedPreferencesManager.getBookList(AyyapaBooksListActivity.this);
+                if (bookList != null && !bookList.isEmpty()) {
+                    // Update the RecyclerView
+                    updateRecyclerView(bookList);
+                }
             }
         });
+    }
 
-
+    private void updateRecyclerView(List<BooksModelResult> bookList) {
+        ayyappaBooksListAdapter = new AyyappaBooksListAdapter(AyyapaBooksListActivity.this, bookList);
+        recyclerView.setAdapter(ayyappaBooksListAdapter);
     }
 }

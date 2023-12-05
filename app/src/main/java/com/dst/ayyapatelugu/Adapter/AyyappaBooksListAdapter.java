@@ -78,6 +78,11 @@ public class AyyappaBooksListAdapter extends RecyclerView.Adapter<AyyappaBooksLi
 
     }
 
+    public void setData(List<BooksModelResult> bookList) {
+        this.bookList = bookList;
+        notifyDataSetChanged();
+    }
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle, tvprice;
         ImageView image;

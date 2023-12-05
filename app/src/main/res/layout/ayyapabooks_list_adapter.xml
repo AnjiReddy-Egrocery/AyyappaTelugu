@@ -49,10 +49,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <TextView
+                <ImageView
                     android:textSize="22sp"
-                    android:text="$ "
+                    android:src="@drawable/baseline_currency_rupee_24"
                     android:layout_below="@+id/img"
+                    android:layout_marginTop="3dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textStyle="bold"/>

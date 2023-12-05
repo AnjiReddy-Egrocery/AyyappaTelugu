@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.dst.ayyapatelugu.Adapter.GuruSwamiListAdapter;
+
+import com.dst.ayyapatelugu.DataBase.SharedPreferencesHelper;
 import com.dst.ayyapatelugu.Model.GuruSwamiList;
 import com.dst.ayyapatelugu.Model.GuruSwamiModelList;
 import com.dst.ayyapatelugu.R;
@@ -41,6 +43,8 @@ public class GuruSwamiListActivity extends AppCompatActivity {
 
     GuruSwamiListAdapter guruSwamiListAdapter;
 
+    SharedPreferencesHelper sharedPreferencesHelper;
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
     @Override
@@ -68,20 +72,47 @@ public class GuruSwamiListActivity extends AppCompatActivity {
             }
         });
 
+        sharedPreferencesHelper= new SharedPreferencesHelper(this);
+
         recyclerView = findViewById(R.id.recycler_guruswami_list);
+        guruswamiList=new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
+        List<GuruSwamiModelList> cachedList = sharedPreferencesHelper.getGuruSwamiList();
+        if (cachedList != null && !cachedList.isEmpty()) {
+            // Step 2: Load cached data into the RecyclerView
+            guruswamiList .addAll(cachedList);
+            updateRecyclerView();
+
+        }
+
+        if (cachedList == null || cachedList.isEmpty()) {
+            fetchGuruSwamiList();
+        }
+
+
+
+    }
+
+    private void updateRecyclerView() {
+        guruSwamiListAdapter = new GuruSwamiListAdapter(GuruSwamiListActivity.this, guruswamiList);
+        recyclerView.setAdapter(guruSwamiListAdapter);
+    }
+
+    private void fetchGuruSwamiList() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(loggingInterceptor)
                 .build();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
+
         APiInterface apiClient = retrofit.create(APiInterface.class);
         Call<GuruSwamiList> call = apiClient.getGuruSwamiList();
 
@@ -90,16 +121,31 @@ public class GuruSwamiListActivity extends AppCompatActivity {
             public void onResponse(Call<GuruSwamiList> call, Response<GuruSwamiList> response) {
                 GuruSwamiList guruSwamiList = response.body();
                 guruswamiList = new ArrayList<>(Arrays.asList(guruSwamiList.getResult()));
-                guruSwamiListAdapter = new GuruSwamiListAdapter(GuruSwamiListActivity.this, guruswamiList);
-                recyclerView.setAdapter(guruSwamiListAdapter);
+
+                // Update the RecyclerView with the latest data
+
+                sharedPreferencesHelper.saveGuruSwamiList(guruswamiList);
+                updateRecyclerView();
+                //sharedPreferencesHelper.saveLastUpdateTime(System.currentTimeMillis());
             }
 
             @Override
             public void onFailure(Call<GuruSwamiList> call, Throwable t) {
+                // Handle the failure scenario if needed
+                // You might want to show an error message to the user
+
+                List<GuruSwamiModelList> cachedList = sharedPreferencesHelper.getGuruSwamiList();
+                if (cachedList != null && !cachedList.isEmpty()) {
+                    // Step 2: Load cached data into the RecyclerView
+                    guruswamiList .addAll(cachedList);
+                    updateRecyclerView();
+
+                }
+
 
             }
         });
-
-
     }
+
+
 }

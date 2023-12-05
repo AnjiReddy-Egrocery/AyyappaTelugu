@@ -31,6 +31,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.dst.ayyapatelugu.DataBase.SharedPreferenceManager;
 import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
@@ -75,6 +77,8 @@ public class DevlyaluActivity extends AppCompatActivity implements OnMapReadyCal
 
     private static final float ZOOM_THRESHOLD = 1.0f;
 
+    private List<TempleMapDataResponse.Result> templeList;
+
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -114,6 +118,8 @@ public class DevlyaluActivity extends AppCompatActivity implements OnMapReadyCal
         } else {
             initMap();
         }
+
+
 
         zoomInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,7 +172,8 @@ public class DevlyaluActivity extends AppCompatActivity implements OnMapReadyCal
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
-
+        float initialZoomLevel = SharedPreferenceManager.getZoomLevel(this);
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(initialZoomLevel));
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
@@ -174,6 +181,8 @@ public class DevlyaluActivity extends AppCompatActivity implements OnMapReadyCal
                 if (Math.abs(newZoomLevel - currentZoomLevel) > ZOOM_THRESHOLD) {
                     // Update markers or perform other actions based on zoom level change
                     currentZoomLevel = newZoomLevel;
+
+                    SharedPreferenceManager.setZoomLevel(DevlyaluActivity.this, newZoomLevel);
 
                 }
             }
@@ -311,25 +320,36 @@ public class DevlyaluActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
     private void fetchLocationDataAndAddMarkers() {
-       Call<TempleMapDataResponse> call = apiClient.getTempleMapList();
-        call.enqueue(new Callback<TempleMapDataResponse>() {
-            @Override
-            public void onResponse(Call<TempleMapDataResponse> call, Response<TempleMapDataResponse> response) {
-                if (response.isSuccessful()) {
-                    TempleMapDataResponse templeMapDataResponse = response.body();
-                    if (templeMapDataResponse != null && templeMapDataResponse.getErrorCode().equals("200")) {
-                        List<TempleMapDataResponse.Result> nearbyTemples = templeMapDataResponse.getResult();
-                        addMarkers(nearbyTemples);
-                    } else {
+        templeList = SharedPreferenceManager.getTempleData(this);
 
+        if (templeList != null && !templeList.isEmpty()) {
+            addMarkers(templeList);
+        } else {
+            // Fetch data from API if SharedPreferences data is not available
+            Call<TempleMapDataResponse> call = apiClient.getTempleMapList();
+            call.enqueue(new Callback<TempleMapDataResponse>() {
+                @Override
+                public void onResponse(Call<TempleMapDataResponse> call, Response<TempleMapDataResponse> response) {
+                    if (response.isSuccessful()) {
+                        TempleMapDataResponse templeMapDataResponse = response.body();
+                        if (templeMapDataResponse != null && templeMapDataResponse.getErrorCode().equals("200")) {
+                            templeList = templeMapDataResponse.getResult();
+                            addMarkers(templeList);
+
+                            // Save data to SharedPreferences for future use
+                            SharedPreferenceManager.saveTempleData(DevlyaluActivity.this, templeList);
+                        } else {
+                            // Handle error
+                        }
                     }
                 }
-            }
-            @Override
-            public void onFailure(Call<TempleMapDataResponse> call, Throwable t) {
 
-            }
-        });
+                @Override
+                public void onFailure(Call<TempleMapDataResponse> call, Throwable t) {
+                    // Handle failure
+                }
+            });
+        }
     }
     private void moveCameraToUserLocation() {
         if (userLocation != null && mMap != null) {

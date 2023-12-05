@@ -99,6 +99,7 @@ public class VerifyActivity extends AppCompatActivity {
                     if (verifyUserDataResponse.getErrorCode().equals("201")){
                         Toast.makeText(VerifyActivity.this,"Enter OTP is Invalid",Toast.LENGTH_LONG).show();
                     }else if (verifyUserDataResponse.getErrorCode().equals("200")){
+                        Toast.makeText(VerifyActivity.this,"User Verification Successfully",Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(VerifyActivity.this, LoginActivity.class);
                         startActivity(intent);
                     }

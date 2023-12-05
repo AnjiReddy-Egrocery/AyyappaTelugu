@@ -11,8 +11,10 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
@@ -30,6 +32,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dst.ayyapatelugu.DataBase.SharedManager;
+import com.dst.ayyapatelugu.DataBase.SharedPreferenceManager;
 import com.dst.ayyapatelugu.Model.AyyappaTempleMapDataResponse;
 import com.dst.ayyapatelugu.Model.MapDataResponse;
 import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
@@ -47,8 +51,12 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Tasks;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -79,6 +87,10 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
     private static final float ZOOM_LEVEL_OUT = -1.0f;
 
     private static final float ZOOM_THRESHOLD = 1.0f;
+
+    private List<AyyappaTempleMapDataResponse.Result> templeList;
+
+
 
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -118,8 +130,8 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
                     LOCATION_PERMISSION_REQUEST_CODE);
         } else {
             initMap();
-        }
 
+        }
         zoomInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -145,7 +157,6 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
                 .build();
         apiClient = retrofit.create(APiInterface.class);
 
-
     }
 
     private void initMap() {
@@ -157,6 +168,9 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
         }
     }
 
+
+
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -166,14 +180,14 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
             mMap.setMyLocationEnabled(true);
             displayCurrentUserLocation();
             setupMarkerClickListeners();
-            fetchLocationDataAndAddMarkers();
-
-        } else {
+            fetchLocationDataAndAddMarkers();        } else {
             // Request location permissions here
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
+        float initialZoomLevel = SharedManager.getZoomLevel(this);
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(initialZoomLevel));
 
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
@@ -182,6 +196,8 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
                 if (Math.abs(newZoomLevel - currentZoomLevel) > ZOOM_THRESHOLD) {
                     // Update markers or perform other actions based on zoom level change
                     currentZoomLevel = newZoomLevel;
+
+                    SharedManager.saveZoomLevel(AyyaappaDevlyaluActivity.this, newZoomLevel);
 
                 }
             }
@@ -236,27 +252,36 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
     }
 
   private void fetchLocationDataAndAddMarkers() {
-      Call<AyyappaTempleMapDataResponse> call = apiClient.getAyyaooaTempleMapList();
-      call.enqueue(new Callback<AyyappaTempleMapDataResponse>() {
-          @Override
-          public void onResponse(Call<AyyappaTempleMapDataResponse> call, Response<AyyappaTempleMapDataResponse> response) {
-              if (response.isSuccessful()) {
-                  AyyappaTempleMapDataResponse ayyappaTempleMapDataResponse = response.body();
-                  if (ayyappaTempleMapDataResponse != null && ayyappaTempleMapDataResponse.getErrorCode().equals("200")) {
-                     List<AyyappaTempleMapDataResponse.Result> ayyappatemples = ayyappaTempleMapDataResponse.getResult();
+      templeList = SharedManager.getTempleData(this);
+      if (templeList != null && !templeList.isEmpty()) {
+          addMarkers(templeList);
+      } else {
+          Call<AyyappaTempleMapDataResponse> call = apiClient.getAyyaooaTempleMapList();
+          call.enqueue(new Callback<AyyappaTempleMapDataResponse>() {
+              @Override
+              public void onResponse(Call<AyyappaTempleMapDataResponse> call, Response<AyyappaTempleMapDataResponse> response) {
+                  if (response.isSuccessful()) {
+                      AyyappaTempleMapDataResponse ayyappaTempleMapDataResponse = response.body();
+                      if (ayyappaTempleMapDataResponse != null && ayyappaTempleMapDataResponse.getErrorCode().equals("200")) {
+                          List<AyyappaTempleMapDataResponse.Result> ayyappatemples = ayyappaTempleMapDataResponse.getResult();
 
-                      addMarkers(ayyappatemples);
-                  } else {
-                      Log.e("API Response", "Invalid response: " + response.code());
+                          addMarkers(ayyappatemples);
+
+                          SharedManager.saveTempleData(AyyaappaDevlyaluActivity.this, ayyappatemples);
+                      } else {
+                          Log.e("API Response", "Invalid response: " + response.code());
+                      }
                   }
               }
-          }
 
-          @Override
-          public void onFailure(Call<AyyappaTempleMapDataResponse> call, Throwable t) {
-              Log.e("API Response", "Error fetching data: " + t.getMessage());
-          }
-      });
+              @Override
+              public void onFailure(Call<AyyappaTempleMapDataResponse> call, Throwable t) {
+                  Log.e("API Response", "Error fetching data: " + t.getMessage());
+              }
+          });
+      }
+
+
     }
     private void addMarkers(List<AyyappaTempleMapDataResponse.Result> ayyappatemples) {
         if(mMap != null) {
@@ -264,9 +289,6 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
             drawMarkersTask.execute();
         }
     }
-
-
-
     private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         View mContentsView;
@@ -341,7 +363,6 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
             mMap.animateCamera(CameraUpdateFactory.zoomTo(newZoomLevel));
         }
     }
-
     private void zoomInMap() {
         if (mMap != null) {
             float newZoomLevel = mMap.getCameraPosition().zoom + ZOOM_LEVEL_IN;
@@ -366,7 +387,9 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
     }
     public class DrawMarkersTask extends AsyncTask<Void, MarkerOptions, Void> {
         List<AyyappaTempleMapDataResponse.Result> myAyyappaTemples;
+
         public DrawMarkersTask(List<AyyappaTempleMapDataResponse.Result> ayyappatemples) {
+
             myAyyappaTemples=ayyappatemples;
         }
 
@@ -379,7 +402,9 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
         @Override
         protected Void doInBackground(Void... voids) {
 
-            for (int i = 0; i < myAyyappaTemples.size(); i++ ){
+            for (int i = 0; i < myAyyappaTemples.size(); i++) {
+                // Check if the activity is still available
+
                 MarkerOptions markerOptions = new MarkerOptions().position(
                         new LatLng(Double.parseDouble(myAyyappaTemples.get(i)
                                 .getLatitude()), Double
@@ -389,10 +414,11 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
                         myAyyappaTemples.get(i).getLocation());
 
                 publishProgress(markerOptions); // pass it for the main UI thread for displaying
+
                 try {
-                    Thread.sleep(50); // sleep for 50 ms so that main UI thread can handle user actions in the meantime
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
-                    // NOP (no operation)
+                    e.printStackTrace();
                 }
             }
 

@@ -1,16 +1,31 @@
 package com.dst.ayyapatelugu.User;
 
-import androidx.appcompat.app.AppCompatActivity;
+import static java.security.AccessController.getContext;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -20,6 +35,10 @@ import com.dst.ayyapatelugu.Model.UserDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.credentials.Credential;
+import com.google.android.gms.auth.api.credentials.Credentials;
+import com.google.android.gms.auth.api.credentials.CredentialsApi;
+import com.google.android.gms.auth.api.credentials.HintRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -41,17 +60,20 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RegisterActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
+    private static final int CREDENTIAL_PICKER_REQUEST = 120;
     LinearLayout layoutLogin;
     EditText edtFirstName, edtLastName, edtNumber, edtEmail, edtPassword, edtReenterPassword;
     Button butRegister;
 
-    LinearLayout linearSignUpWithGmail;
+    //LinearLayout linearSignUpWithGmail;
 
     boolean isAllFieldsChecked = false;
 
     private GoogleApiClient mGoogleApiClient;
     private static final int RC_SIGN_IN = 9001;
     private static final int RC_SIGN_UP_WITH_GOOGLE = 9002;
+
+    private static final int PERMISSION_REQUEST_CODE = 1;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -67,7 +89,7 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         edtReenterPassword = findViewById(R.id.edt_reenter_password);
         layoutLogin = findViewById(R.id.layout_login);
         butRegister = findViewById(R.id.but_register);
-        linearSignUpWithGmail=findViewById(R.id.layout_signup_gmail);
+        //linearSignUpWithGmail=findViewById(R.id.layout_signup_gmail);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -78,13 +100,35 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-        linearSignUpWithGmail.setOnClickListener(new View.OnClickListener() {
+
+        edtNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                HintRequest hintRequest = new HintRequest.Builder()
+                        .setPhoneNumberIdentifierSupported(true)
+                        .build();
+
+
+                PendingIntent intent = Credentials.getClient(getApplicationContext()).getHintPickerIntent(hintRequest);
+                try
+                {
+                    startIntentSenderForResult(intent.getIntentSender(), CREDENTIAL_PICKER_REQUEST, null, 0, 0, 0,new Bundle());
+                }
+                catch (IntentSender.SendIntentException e)
+                {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+       /* linearSignUpWithGmail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 signUpWithGoogle(false);
             }
         });
-
+*/
         layoutLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -93,31 +137,66 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
             }
         });
 
+
         butRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
                 String name = edtFirstName.getText().toString().trim();
                 String lastname = edtLastName.getText().toString().trim();
                 String number = edtNumber.getText().toString().trim();
                 String email = edtEmail.getText().toString().trim();
                 String password = edtPassword.getText().toString().trim();
-                String reEnterPassword=edtReenterPassword.getText().toString().trim();
+                String reEnterPassword = edtReenterPassword.getText().toString().trim();
+
+
+                if (!doPasswordsMatch(password, reEnterPassword)) {
+                    Toast.makeText(RegisterActivity.this, "Password and ConfirmPassword do not match", Toast.LENGTH_SHORT).show();
+
+                }
 
                 if (isValidFirstName(name)
                         && isValidLastName(lastname)
                         && isValidEmail(email)
                         && isValidMobileNumber(number)
                         && isValidPassword(password)
-                        && doPasswordsMatch(password,reEnterPassword)) {
+                        && doPasswordsMatch(password, reEnterPassword)) {
 
                     validationMethod(name, lastname, number, email, password);
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Validation failed. Please check your input.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
+
+    public void ShowHidePass(View view) {
+
+        if(view.getId()==R.id.show_pass_btn){
+            if(edtPassword.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())){
+                ((ImageView)(view)).setImageResource(R.drawable.visiablityoff);
+                //Show Password
+                edtPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            }
+            else{
+                ((ImageView)(view)).setImageResource(R.drawable.visiablity);
+                //Hide Password
+                edtPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+        }
+    }
+
+    public void ShowHideConfirmPass(View view) {
+
+        if(view.getId()==R.id.show_Confirmpass_btn){
+            if(edtReenterPassword.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())){
+                ((ImageView)(view)).setImageResource(R.drawable.visiablityoff);
+                //Show Password
+                edtReenterPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            }
+            else{
+                ((ImageView)(view)).setImageResource(R.drawable.visiablity);
+                //Hide Password
+                edtReenterPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+        }
     }
 
     private void signUpWithGoogle(boolean isSignUp) {
@@ -126,26 +205,48 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     private boolean doPasswordsMatch(String password, String reEnterPassword) {
+
+
         return password.equals(reEnterPassword);
     }
 
     private boolean isValidPassword(String password) {
+        if (TextUtils.isEmpty(password)){
+            Toast.makeText(RegisterActivity.this,"Please enter your password",Toast.LENGTH_SHORT).show();
+            return false;
+        }
         return password.length() >= 6;
     }
 
     private boolean isValidMobileNumber(String number) {
+        if (TextUtils.isEmpty(number)){
+            Toast.makeText(RegisterActivity.this,"Please enter your mobile number",Toast.LENGTH_SHORT).show();
+            return false;
+        }
         return Patterns.PHONE.matcher(number).matches();
     }
 
     private boolean isValidLastName(String lastname) {
-        return !TextUtils.isEmpty(lastname);
+         if (TextUtils.isEmpty(lastname)){
+             Toast.makeText(RegisterActivity.this,"Please enter your last name",Toast.LENGTH_SHORT).show();
+             return false;
+         }
+         return true;
+
     }
 
     private boolean isValidFirstName(String name) {
-        return !TextUtils.isEmpty(name);
+        if (TextUtils.isEmpty(name)) {
+            Toast.makeText(RegisterActivity.this, "Please enter your first name", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
     private boolean isValidEmail(String email) {
+        if (TextUtils.isEmpty(email)){
+            Toast.makeText(RegisterActivity.this,"Please Enter Your emailId",Toast.LENGTH_SHORT).show();
+        }
         String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
         return email.matches(emailPattern);
     }
@@ -177,17 +278,18 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
                         Toast.makeText(RegisterActivity.this, "Email and Mobile Number alerady Exists", Toast.LENGTH_SHORT).show();
                     } else if (userDataResponse.getErrorCode().equals("200")) {
                         String registerId = "";
-                        String otp="";
+                        String otp = "";
                         Log.e("USERDADA", "list: " + userDataResponse.getResult());
                         List<UserDataResponse.Result> list = userDataResponse.getResult();
                         for (int i = 0; i < list.size(); i++) {
                             registerId = list.get(i).getRegisterId();
-                            otp=list.get(i).getOtp();
+                            otp = list.get(i).getOtp();
                             Log.e("registerId", "registerId: " + registerId);
                         }
-                        Intent intent = new Intent(RegisterActivity.this, VerifyActivity.class);
-                        intent.putExtra("registerId", registerId);
-                        intent.putExtra("otp",otp);
+                        Toast.makeText(RegisterActivity.this, "User Registration Completed Successfully", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        /*intent.putExtra("registerId", registerId);
+                        intent.putExtra("otp", otp);*/
                         startActivity(intent);
                     }
                 } else {
@@ -221,6 +323,22 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
                 showToast("Failed to sign in/sign up. Please try again.");
             }
         }
+
+        if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == RESULT_OK)
+        {
+            // Obtain the phone number from the result
+            Credential credentials = data.getParcelableExtra(Credential.EXTRA_KEY);
+            edtNumber.setText(credentials.getId().substring(3)); //get the selected phone number
+//Do what ever you want to do with your selected phone number here
+
+
+        }
+        else if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == CredentialsApi.ACTIVITY_RESULT_NO_HINTS_AVAILABLE)
+        {
+            // *** No phone numbers available ***
+            Toast.makeText(RegisterActivity.this, "No phone numbers found", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     private GoogleSignInAccount handleSignInResult(GoogleSignInResult signInResultFromIntent) {
@@ -231,6 +349,7 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
             return null;
         }
     }
+
     private void handleSignInResult(GoogleSignInAccount account) {
         // Handle the initial sign-in result
         String displayName = account.getDisplayName();
@@ -242,12 +361,13 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         startActivity(new Intent(this, HomeActivity.class));
         finish();
     }
+
     private void performSignUp(GoogleSignInAccount account) {
         // Extract information from the account and perform sign-up
 
         String displayName = account.getDisplayName();
         String email = account.getEmail();
-        String profilepic= String.valueOf(account.getPhotoUrl());
+        String profilepic = String.valueOf(account.getPhotoUrl());
 
         // Now, send this information to your server for user registration
         sendSignUpDataToServer(displayName, email, profilepic);
@@ -267,26 +387,26 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
                 .build();
         APiInterface apiClient = retrofit.create(APiInterface.class);
 
-        RequestBody displayPar=RequestBody.create(MediaType.parse("text/plain"), displayName);
-        RequestBody emailPart=RequestBody.create(MediaType.parse("text/plain"), email);
-        RequestBody photoPart=RequestBody.create(MediaType.parse("text/plain"), profilepic);
+        RequestBody displayPar = RequestBody.create(MediaType.parse("text/plain"), displayName);
+        RequestBody emailPart = RequestBody.create(MediaType.parse("text/plain"), email);
+        RequestBody photoPart = RequestBody.create(MediaType.parse("text/plain"), profilepic);
 
-        Call<SignUpWithGmail> call=apiClient.PostSignUp(displayPar,emailPart,photoPart);
+        Call<SignUpWithGmail> call = apiClient.PostSignUp(displayPar, emailPart, photoPart);
         call.enqueue(new Callback<SignUpWithGmail>() {
             @Override
             public void onResponse(Call<SignUpWithGmail> call, Response<SignUpWithGmail> response) {
-                if (response.isSuccessful()){
+                if (response.isSuccessful()) {
 
-                    SignUpWithGmail signUpWithGmail=response.body();
-                    if (signUpWithGmail.getErrorCode().equals("200")){
-                        String displayName="";
-                        String email="";
-                        String photo="";
-                        List<SignUpWithGmail.Result> results=signUpWithGmail.getResult();
-                        for (int i=0; i<results.size(); i++){
-                            displayName =results.get(i).getFullName();
-                            email=results.get(i).getUserEmail();
-                            photo=results.get(i).getProfilePic();
+                    SignUpWithGmail signUpWithGmail = response.body();
+                    if (signUpWithGmail.getErrorCode().equals("200")) {
+                        String displayName = "";
+                        String email = "";
+                        String photo = "";
+                        List<SignUpWithGmail.Result> results = signUpWithGmail.getResult();
+                        for (int i = 0; i < results.size(); i++) {
+                            displayName = results.get(i).getFullName();
+                            email = results.get(i).getUserEmail();
+                            photo = results.get(i).getProfilePic();
 
                             Log.e("Reddy", "displayname: " + displayName);
                             Log.e("Reddy", "email: " + email);
@@ -296,14 +416,14 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
 
                         Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                         intent.putExtra("displayname", displayName);
-                        intent.putExtra("email",email);
-                        intent.putExtra("profilepic",photo);
+                        intent.putExtra("email", email);
+                        intent.putExtra("profilepic", photo);
                         startActivity(intent);
 
 
                     }
 
-                }else {
+                } else {
                     Toast.makeText(RegisterActivity.this, "Data Error", Toast.LENGTH_LONG).show();
                 }
 
@@ -323,6 +443,8 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // Connection failed, show error message
-        Toast.makeText(RegisterActivity.this,"Connection to Google Play services failed. Please try again.",Toast.LENGTH_LONG).show();
+        Toast.makeText(RegisterActivity.this, "Connection to Google Play services failed. Please try again.", Toast.LENGTH_LONG).show();
     }
+
+
 }

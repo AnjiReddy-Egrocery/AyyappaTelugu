@@ -5,10 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,8 +25,16 @@ import com.dst.ayyapatelugu.Model.KaryakaramamListModel;
 import com.dst.ayyapatelugu.Model.KaryakarmamList;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +56,8 @@ public class AyyappaKaryamListActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     AyyapakaryamListAdappter ayyapakaryamListAdappter;
 
+    private static final String PREF_NAME = "AyyappaData";
+    private static final String KEY_DATA = "karyakarmamList";
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
     @Override
@@ -67,17 +83,41 @@ public class AyyappaKaryamListActivity extends AppCompatActivity {
                 finish();
             }
         });
-
         recyclerView = findViewById(R.id.recycler_karyakaramam);
+        karyakaramamListModels=new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+        loadSavedData();
+
+        if (isNetworkAvailable()) {
+            fetchFreshDataInBackground();
+        }
+      //  fetchDataFromApi();
+    }
+
+    private void fetchFreshDataInBackground() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                fetchDataFromApi();
+            }
+        }).start();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
+    private void fetchDataFromApi() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
+                .baseUrl("https://www.ayyappatelugu.com/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
@@ -87,19 +127,53 @@ public class AyyappaKaryamListActivity extends AppCompatActivity {
         call.enqueue(new Callback<KaryakarmamList>() {
             @Override
             public void onResponse(Call<KaryakarmamList> call, Response<KaryakarmamList> response) {
-                KaryakarmamList list = response.body();
-                karyakaramamListModels = new ArrayList<>(Arrays.asList(list.getResult()));
+                if (response.isSuccessful()) {
+                    KaryakarmamList list = response.body();
+                    karyakaramamListModels = new ArrayList<>(Arrays.asList(list.getResult()));
 
-                ayyapakaryamListAdappter = new AyyapakaryamListAdappter(AyyappaKaryamListActivity.this, karyakaramamListModels);
-                recyclerView.setAdapter(ayyapakaryamListAdappter);
+                    // Save data to SharedPreferences
+
+                    saveDataToSharedPreferences(karyakaramamListModels);
+                    // Display the data
+                    displayData();
+                }
             }
 
             @Override
             public void onFailure(Call<KaryakarmamList> call, Throwable t) {
-
+                // Handle API call failure
+                //Toast.makeText(AyyappaKaryamListActivity.this, "Failed to fetch data from API", Toast.LENGTH_SHORT).show();
+                loadSavedData();
             }
         });
+    }
 
+    private void displayData() {
+        ayyapakaryamListAdappter = new AyyapakaryamListAdappter(AyyappaKaryamListActivity.this, karyakaramamListModels);
+        recyclerView.setAdapter(ayyapakaryamListAdappter);
+    }
 
+    private void saveDataToSharedPreferences(List<KaryakaramamListModel> data) {
+        SharedPreferences.Editor editor = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(data);
+        editor.putString(KEY_DATA, json);
+        editor.apply();
+    }
+
+    private void loadSavedData() {
+        SharedPreferences preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String json = preferences.getString(KEY_DATA, null);
+
+        if (json != null) {
+            // Data is available in SharedPreferences, parse and display it
+            Type type = new TypeToken<List<KaryakaramamListModel>>(){}.getType();
+            karyakaramamListModels = new Gson().fromJson(json, type);
+            displayData();
+        } else {
+            // No data available, show an appropriate message
+            fetchDataFromApi();
+           // Toast.makeText(this, "No saved data available", Toast.LENGTH_SHORT).show();
+        }
     }
 }

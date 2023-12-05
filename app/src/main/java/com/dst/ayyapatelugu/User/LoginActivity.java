@@ -7,9 +7,12 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
 
     GoogleSignInOptions gso;
     GoogleSignInClient gsc;
-    LinearLayout linearAuth;
+    //LinearLayout linearAuth;
 
 
     @Override
@@ -79,40 +82,52 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-               String  loginMobile =edtEmail.getText().toString();
-               String loginPassword=edtPassword.getText().toString();
+                String loginInput = edtEmail.getText().toString().trim();
+                String loginPassword = edtPassword.getText().toString().trim();
 
-                if (isValidEmail(loginMobile)
-                        && isValidPassword(loginPassword)) {
-
-                    LoginMethod(loginMobile,loginPassword);
+                if (!loginInput.isEmpty() && isValidPassword(loginPassword)) {
+                    LoginMethod(loginInput, loginPassword);
                 } else {
-                    Toast.makeText(LoginActivity.this, "Validation failed. Please check your input.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Plz Enter Input Fields.", Toast.LENGTH_SHORT).show();
                 }
-
-
             }
         });
 
-        linearAuth = findViewById(R.id.layout_auth);
+        //linearAuth = findViewById(R.id.layout_auth);
 
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         gsc = GoogleSignIn.getClient(LoginActivity.this, gso);
 
 
-        linearAuth.setOnClickListener(new View.OnClickListener() {
+       /* linearAuth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 SignIn();
             }
         });
-
+*/
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         boolean isLoggedIn = SharedPrefManager.getInstance(getApplicationContext()).isLoggedIn();
         if (account != null || isLoggedIn) {
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             startActivity(intent);
             finish();
+        }
+    }
+
+    public void ShowHidePass(View view) {
+
+        if(view.getId()==R.id.show_pass_btn){
+            if(edtPassword.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())){
+                ((ImageView)(view)).setImageResource(R.drawable.visiablityoff);
+                //Show Password
+                edtPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            }
+            else{
+                ((ImageView)(view)).setImageResource(R.drawable.visiablity);
+                //Hide Password
+                edtPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
         }
     }
 
@@ -138,13 +153,12 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     LoginDataResponse dataResponse=response.body();
                     if (dataResponse.getErrorCode().equals("201")){
-                        Toast.makeText(LoginActivity.this,"Email and Password Doesn't Match",Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this,"InCorrect Email and Password",Toast.LENGTH_LONG).show();
                     }else if (dataResponse.getErrorCode().equals("200")){
                         SharedPrefManager.getInstance(getApplicationContext()).insertData(response.body());
-
-                            Intent intent=new Intent(LoginActivity.this,HomeActivity.class);
-
-                            startActivity(intent);
+                        Toast.makeText(LoginActivity.this, "User Login Successfully", Toast.LENGTH_SHORT).show();
+                        Intent intent=new Intent(LoginActivity.this,HomeActivity.class);
+                        startActivity(intent);
                     }
                 }
             }

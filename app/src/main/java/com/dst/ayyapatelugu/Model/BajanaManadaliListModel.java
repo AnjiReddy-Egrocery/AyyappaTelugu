@@ -12,8 +12,8 @@ public class BajanaManadaliListModel {
     private String bajanamandaliId;
     private String bajanamandaliDescription;
 
-    public BajanaManadaliListModel(String itemid) {
-        this.bajanamandaliId = itemid;
+    public BajanaManadaliListModel() {
+
     }
 
     public BajanaManadaliListModel(String bajanamandaliName, String bajanamandaliLocation, String profilePic, String nameOfGuru, String bajanamandaliMobile, String bajanamandaliCity, String bajanamandaliEmail, String bajanamandaliId, String bajanamandaliDescription) {
