@@ -104,7 +104,7 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
         toolbar.setTitle("www.ayyappatelugu.com");
         toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
         setSupportActionBar(toolbar);
-        ;
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         Drawable nav = toolbar.getNavigationIcon();

@@ -3,6 +3,7 @@ package com.dst.ayyapatelugu.User;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -51,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
     //LinearLayout linearAuth;
 
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,14 +100,12 @@ public class LoginActivity extends AppCompatActivity {
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         gsc = GoogleSignIn.getClient(LoginActivity.this, gso);
 
-
-       /* linearAuth.setOnClickListener(new View.OnClickListener() {
+        /*linearAuth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 SignIn();
             }
-        });
-*/
+        });*/
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         boolean isLoggedIn = SharedPrefManager.getInstance(getApplicationContext()).isLoggedIn();
         if (account != null || isLoggedIn) {

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,7 +30,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class VerifyActivity extends AppCompatActivity {
 
-    EditText edtOtp;
+
     Button butVerify;
     String registationId="",otp="";
 
@@ -40,23 +41,26 @@ public class VerifyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify);
 
-        edtOtp = findViewById(R.id.edt_otp);
         butVerify = findViewById(R.id.but_verify);
 
         Bundle bundle = getIntent().getExtras();
         registationId = bundle.getString("registerId");
         otp=bundle.getString("otp");
-        edtOtp.setText(otp);
+
+        Log.e("Reddy","Otp"+otp);
+        Log.e("Reddy","RegistationId"+registationId);
+
 
         butVerify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               otp=edtOtp.getText().toString().trim();
+                VerificationMethod(registationId,otp);
+               /*otp=edtOtp.getText().toString().trim();
 
                if (!isValidOtp(otp)){
                    edtOtp.setError("Please Enter Valid otp");
                }else {
-                   VerificationMethod(registationId,otp);
+
                }
 
                 if (isValidOtp(otp)){
@@ -64,16 +68,14 @@ public class VerifyActivity extends AppCompatActivity {
                     VerificationMethod(registationId,otp);
                 } else {
                     Toast.makeText(VerifyActivity.this, "Validation failed. Please check your input.", Toast.LENGTH_SHORT).show();
-                }
+                }*/
 
 
             }
         });
     }
 
-    private boolean isValidOtp(String otp) {
-        return otp.length() == 4;
-    }
+
 
     private void VerificationMethod(String registationId, String otp) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();

@@ -44,7 +44,7 @@
             android:padding="20dp"
             android:orientation="vertical">
 
-            <EditText
+         <!--   <EditText
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:id="@+id/edt_otp"
@@ -56,14 +56,21 @@
                 android:textColor="#000"
                 android:textColorHint="#000"
                 android:background="@drawable/editext_border"
-                android:drawableLeft="@drawable/baseline_call_24"/>
+                android:drawableLeft="@drawable/baseline_call_24"/>-->
 
-
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thank You, Registered Successfully..."
+                android:gravity="center"
+                android:textColor="#000"
+                android:textSize="16dp"
+                android:textStyle="bold"/>
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="16dp"
-                android:text="Verify"
+                android:text="Continue With Login"
                 android:id="@+id/but_verify"
                 android:textColor="#FFF"
                 android:textSize="18dp"

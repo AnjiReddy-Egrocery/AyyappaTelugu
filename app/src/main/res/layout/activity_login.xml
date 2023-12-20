@@ -148,7 +148,7 @@
                 android:id="@+id/txt_create"/>
 
 
-          <!--  <LinearLayout
+            <!--<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:background="@drawable/gmail_background"

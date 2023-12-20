@@ -5,10 +5,12 @@ import com.dst.ayyapatelugu.Model.BajanaManadaliListModel;
 import com.dst.ayyapatelugu.Model.BajanaMandaliList;
 import com.dst.ayyapatelugu.Model.BooksListModel;
 import com.dst.ayyapatelugu.Model.CalenderDataResponse;
+import com.dst.ayyapatelugu.Model.ForgotDataResponse;
 import com.dst.ayyapatelugu.Model.GuruSwamiList;
 import com.dst.ayyapatelugu.Model.KaryakarmamList;
 import com.dst.ayyapatelugu.Model.LoginDataResponse;
 import com.dst.ayyapatelugu.Model.MapDataResponse;
+import com.dst.ayyapatelugu.Model.ResetPasswordResponse;
 import com.dst.ayyapatelugu.Model.SignUpWithGmail;
 import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
 import com.dst.ayyapatelugu.Model.UserDataResponse;
@@ -89,6 +91,16 @@ public interface APiInterface {
     Call<SignUpWithGmail> PostSignUp(@Part("displayname") RequestBody displayname,
                                      @Part("email") RequestBody email,
                                      @Part("profilepic") RequestBody profilepic );
+
+    @Multipart
+    @POST("APICalls/Users/requestToResetPassword")
+    Call<ForgotDataResponse> forgotData(@Part("userName") RequestBody userName);
+
+    @Multipart
+    @POST("APICalls/Users/updateAccountPassword")
+    Call<ResetPasswordResponse> resetData(@Part("registerId") RequestBody registerId ,
+                                          @Part("otp") RequestBody otp,
+                                          @Part("pwd") RequestBody pwd);
 
 
 

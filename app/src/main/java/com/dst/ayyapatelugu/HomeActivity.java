@@ -4,15 +4,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -68,6 +73,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     TextView txtName, txtEmail;
     ImageView imageView;
+
+    private static final int REQUEST_PERMISSION_CODE = 1;
 
 
     LinearLayout layoutAyyapaKaryam, layoutGuruswamiList, layoutAyyappaMandali, layoutAyyappaBooks, layoutTourse, layoutDecaration;
@@ -201,7 +208,53 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         txtName.setText(name);
         txtEmail.setText(email);
 
+        checkAndRequestPermissions();
+
     }
+
+    private void checkAndRequestPermissions() {
+        String[] permissions = {
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.READ_PHONE_NUMBERS
+
+        };
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!arePermissionsGranted(permissions)) {
+                ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
+            }
+        }
+    }
+
+    private boolean arePermissionsGranted(String[] permissions) {
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            if (!areAllPermissionsGranted(grantResults)) {
+               // showPermissionDeniedDialog();
+            }
+        }
+    }
+
+
     @Override
     protected void onDestroy() {
         timer.cancel();
@@ -233,6 +286,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+    private boolean areAllPermissionsGranted(int[] grantResults) {
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
     }
 
 

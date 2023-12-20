@@ -19,5 +19,6 @@
 
     <string name="API_KEY" translatable="false">AIzaSyBFF-2pTBlXSj8AhJPOKduLVPvkpm2TnEs</string>
 
+    <string name="web_client_id" translatable="false">187852984175-otmpmq3isadgiercnmt481vadu07e9nv.apps.googleusercontent.com</string>
 
 </resources>

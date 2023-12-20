@@ -13,7 +13,7 @@ public class SharedPrefManager {
     static SharedPrefManager sharedPrefManager;
     Context mContext;
     private static final String SHARED_PREF_NAME = "userProfile";
-    private static final String STUDENT_ID="userId";
+    private static final String STUDENT_ID="userId ";
     private static final String FIRST_NAME="userFirstName";
     private static final String LAST_NAME="userLastName";
     private static final String EMAIL_ID="userEmail";
@@ -32,14 +32,16 @@ public class SharedPrefManager {
     //insert user data
     public void insertData(LoginDataResponse userInfo){
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor=sharedPreferences.edit();
-        editor.putString(STUDENT_ID,userInfo.getResult().getUserId());
-        editor.putString(FIRST_NAME,userInfo.getResult().getUserFirstName());
-        editor.putString(LAST_NAME,userInfo.getResult().getUserLastName());
-        editor.putString(EMAIL_ID,userInfo.getResult().getUserEmail());
-        editor.putString(FATHER_MOBILE,userInfo.getResult().getUserMobile());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(STUDENT_ID, userInfo.getResult().getUserId());
+        editor.putString(FIRST_NAME, userInfo.getResult().getUserFirstName());
+        editor.putString(LAST_NAME, userInfo.getResult().getUserLastName());
+        editor.putString(EMAIL_ID, userInfo.getResult().getUserEmail());
+        editor.putString(FATHER_MOBILE, userInfo.getResult().getUserMobile());
 
         editor.commit();
+
+
 
     }
 
