@@ -13,6 +13,7 @@ import com.bumptech.glide.module.AppGlideModule;
 
 import java.io.InputStream;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 
@@ -31,6 +32,6 @@ public class MyGlideModule extends AppGlideModule {
                 .build();
 
         // Register OkHttpUrlLoader with Glide
-        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(client));
+        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory((Call.Factory) client));
     }
 }
