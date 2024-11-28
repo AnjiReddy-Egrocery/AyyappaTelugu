@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,10 +49,10 @@ public class AyyappaBooksListAdapter extends RecyclerView.Adapter<AyyappaBooksLi
         String pages = modal.getPages();
         String published = modal.getPublishedOn();
         holder.tvtitle.setText(name);
-        holder.tvprice.setText(price);
+        //holder.tvprice.setText(price);
         Picasso.get().load(imgUrl).into(holder.image);
 
-        holder.butViewdetails.setOnClickListener(new View.OnClickListener() {
+        holder.layoutBooksList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, AyyappaBooksDetailsActivity.class);
@@ -84,17 +85,19 @@ public class AyyappaBooksListAdapter extends RecyclerView.Adapter<AyyappaBooksLi
     }
 
     public class MyviewHolder extends RecyclerView.ViewHolder {
-        TextView tvtitle, tvprice;
+        TextView tvtitle;
         ImageView image;
+        LinearLayout layoutBooksList;
 
-        Button butViewdetails;
+       // Button butViewdetails;
 
         public MyviewHolder(View itemView) {
             super(itemView);
             tvtitle = (TextView) itemView.findViewById(R.id.txtname);
-            tvprice = (TextView) itemView.findViewById(R.id.txt_price);
+            //tvprice = (TextView) itemView.findViewById(R.id.txt_price);
             image = (ImageView) itemView.findViewById(R.id.img_detail);
-            butViewdetails = (Button) itemView.findViewById(R.id.but_view_details);
+            layoutBooksList = (LinearLayout) itemView.findViewById(R.id.layout_books_list);
+           // butViewdetails = (Button) itemView.findViewById(R.id.but_view_details);
 
         }
     }

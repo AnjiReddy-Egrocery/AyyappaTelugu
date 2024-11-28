@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
@@ -15,15 +16,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.dst.ayyapatelugu.Adapter.AyyappaBooksListAdapter;
 
 import com.dst.ayyapatelugu.DataBase.SharedPreferencesManager;
+import com.dst.ayyapatelugu.HomeActivity;
 import com.dst.ayyapatelugu.Model.BooksListModel;
 import com.dst.ayyapatelugu.Model.BooksModelResult;
 
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 
 
 import java.util.ArrayList;
@@ -48,6 +53,8 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
 
 
     AyyappaBooksListAdapter ayyappaBooksListAdapter;
+    ImageView imageAnadanam,imageNityaPooja;
+    TextView textAndanam,txtNityaPooja;
 
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -57,9 +64,9 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ayyapa_books_list);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.user_profile_background);
+        /*toolbar.setLogo(R.drawable.user_profile_background);
         toolbar.setTitle("www.ayyappatelugu.com");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
         setSupportActionBar(toolbar);
         ;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -81,6 +88,44 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
+        imageAnadanam=findViewById(R.id.layout_image_anadanam);
+        imageAnadanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyapaBooksListActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        textAndanam = findViewById(R.id.layout_txt_anadanam);
+        textAndanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyapaBooksListActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        txtNityaPooja = findViewById(R.id.txt_nitya_pooja);
+        txtNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(AyyapaBooksListActivity.this, NityaPoojaActivity.class);
+                startActivity(intent);
+
+            }
+        });
+        imageNityaPooja = findViewById(R.id.img_nitya_pooja);
+        imageNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyapaBooksListActivity.this,NityaPoojaActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
         fetchDataFromSharedPreferences();
     }
 
@@ -99,7 +144,10 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
     private void fetchDataFromDataBase() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()

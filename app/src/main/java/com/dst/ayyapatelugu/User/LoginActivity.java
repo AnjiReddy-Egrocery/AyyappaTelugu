@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,12 +24,15 @@ import com.dst.ayyapatelugu.HomeActivity;
 import com.dst.ayyapatelugu.Model.LoginDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+
+import javax.net.ssl.SSLHandshakeException;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -134,38 +138,66 @@ public class LoginActivity extends AppCompatActivity {
     private void LoginMethod(String parentEmail, String password) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
+        // Create the Retrofit instance
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create()) // Use Gson for JSON parsing
                 .client(client)
                 .build();
+
+        // Create the API interface
         APiInterface apiClient = retrofit.create(APiInterface.class);
+
+        // Create request body parts for email and password
         RequestBody parentEmailPart = RequestBody.create(MediaType.parse("text/plain"), parentEmail);
         RequestBody passwordPart = RequestBody.create(MediaType.parse("text/plain"), password);
 
-        Call<LoginDataResponse> call=apiClient.LoginData(parentEmailPart,passwordPart);
+        // Call the login API
+        Call<LoginDataResponse> call = apiClient.LoginData(parentEmailPart, passwordPart);
+
+        // Enqueue the API call to execute asynchronously
         call.enqueue(new Callback<LoginDataResponse>() {
             @Override
             public void onResponse(Call<LoginDataResponse> call, Response<LoginDataResponse> response) {
-                if (response.isSuccessful()){
-                    LoginDataResponse dataResponse=response.body();
-                    if (dataResponse.getErrorCode().equals("201")){
-                        Toast.makeText(LoginActivity.this,"InCorrect Email and Password",Toast.LENGTH_LONG).show();
-                    }else if (dataResponse.getErrorCode().equals("200")){
-                        SharedPrefManager.getInstance(getApplicationContext()).insertData(response.body());
+                // Check if the response was successful and not null
+                if (response.isSuccessful() && response.body() != null) {
+                    LoginDataResponse dataResponse = response.body();
+
+                    String errorCode = dataResponse.getErrorCode();
+                    if (errorCode.equals("201")) {
+                        // Incorrect email or password
+                        Toast.makeText(LoginActivity.this, "Incorrect Email or Password", Toast.LENGTH_LONG).show();
+                    } else if (errorCode.equals("200")) {
+                        // Successful login, save data and navigate to HomeActivity
+                        SharedPrefManager.getInstance(getApplicationContext()).insertData(dataResponse);
                         Toast.makeText(LoginActivity.this, "User Login Successfully", Toast.LENGTH_SHORT).show();
-                        Intent intent=new Intent(LoginActivity.this,HomeActivity.class);
+
+                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                         startActivity(intent);
                     }
+                } else {
+                    // Handle unexpected response (e.g., server error or invalid data)
+                    Log.e("LoginError", "Response code: " + response.code());
+                    Toast.makeText(LoginActivity.this, "Login failed. Unexpected response.", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginDataResponse> call, Throwable t) {
-
+                // Handle network errors, including SSLHandshakeException
+                if (t instanceof SSLHandshakeException) {
+                    Log.e("LoginError", "SSL handshake failed: " + t.getMessage());
+                    Toast.makeText(LoginActivity.this, "SSL Error. Please check your network security.", Toast.LENGTH_LONG).show();
+                } else {
+                    Log.e("LoginError", "Network error: " + t.getMessage());
+                    Toast.makeText(LoginActivity.this, "Login failed. Please check your internet connection.", Toast.LENGTH_LONG).show();
+                }
             }
         });
 

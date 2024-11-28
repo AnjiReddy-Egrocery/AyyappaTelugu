@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_logo"
     tools:context=".HomeActivity">
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -13,29 +14,87 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#BC0F0F" />
+            android:background="#BC0F0F" >
+            <include
+                layout="@layout/headr_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
+
+
+
+    <include
+        layout="@layout/guru_swami_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp"/>
+
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="65dp"
-        android:orientation="vertical">
+        android:layout_height="75dp"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom"
+        android:background="#FFF0D1">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="గురుస్వాముల జాబిత"
-            android:textColor="#BC0F0F"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:gravity="center"/>
+            android:orientation="horizontal"
+            android:weightSum="5"
+            android:gravity="center"
+            android:layout_weight="1">
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_weight="1"
+                android:id="@+id/layout_image_anadanam"
+                android:layout_marginLeft="-20dp"
+                android:src="@drawable/location"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="అన్నదానం"
+                android:layout_weight="1"
+                android:textColor="#E41B1B"
+                android:gravity="center"
+                android:id="@+id/layout_txt_anadanam"
+                android:layout_marginLeft="-20dp"
+                android:textSize="20dp"
+                android:textStyle="bold"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="12dp"
-            android:id="@+id/recycler_guruswami_list"/>
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="-0dp"
+                android:src="@drawable/bottomcenter"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="నిత్య పూజ"
+                android:layout_weight="1"
+                android:textColor="#E41B1B"
+                android:textSize="20dp"
+                android:id="@+id/txt_nitya_pooja"
+                android:layout_marginRight="-18dp"
+                android:layout_marginLeft="-20dp"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_weight="1"
+                android:id="@+id/img_nitya_pooja"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="18dp"
+                android:layout_marginLeft="10dp"
+                android:src="@drawable/nithyapooja"/>
+
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

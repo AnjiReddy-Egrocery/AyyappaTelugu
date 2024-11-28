@@ -4,11 +4,13 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,14 +21,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 
 import com.dst.ayyapatelugu.Adapter.AyyappaPetamListAdapteer;
 
+import com.dst.ayyapatelugu.HomeActivity;
 import com.dst.ayyapatelugu.Model.decoratorListModel;
 import com.dst.ayyapatelugu.Model.decoratormodelResult;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -49,6 +55,10 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
     private List<decoratormodelResult> decoratorList = new ArrayList<>();
     private RecyclerView recyclerView;
     private AyyappaPetamListAdapteer ayyappaPetamListAdapteer;
+    private Retrofit retrofit;
+
+    ImageView imageAnadanam,imageNityaPooja;
+    TextView textAndanam,txtNityaPooja;
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -59,9 +69,9 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ayyappa_petam_list);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.user_profile_background);
+        /*toolbar.setLogo(R.drawable.user_profile_background);
         toolbar.setTitle("www.ayyappatelugu.com");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
         setSupportActionBar(toolbar);
         ;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -78,9 +88,47 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
             }
         });
 
+        imageAnadanam=findViewById(R.id.layout_image_anadanam);
+        imageAnadanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyappaPetamListActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        textAndanam = findViewById(R.id.layout_txt_anadanam);
+        textAndanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyappaPetamListActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        txtNityaPooja = findViewById(R.id.txt_nitya_pooja);
+        txtNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(AyyappaPetamListActivity.this, NityaPoojaActivity.class);
+                startActivity(intent);
+
+            }
+        });
+        imageNityaPooja = findViewById(R.id.img_nitya_pooja);
+        imageNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyappaPetamListActivity.this,NityaPoojaActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
         recyclerView = findViewById(R.id.recycler_decorator);
         decoratorList=new ArrayList<>();
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         List<decoratormodelResult> cachedData = loadDataFromSharedPreferences();
 
@@ -99,12 +147,16 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
 
     private void fetchDataFromApiAndSaveToSQLite() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Change to Level.BASIC for less detail
+
+        // Create OkHttpClient without SSL bypassing
         OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
+                .addInterceptor(loggingInterceptor) // Add the logging interceptor
                 .build();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
+
+        // Initialize Retrofit with the OkHttpClient
+        retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.ayyappatelugu.com/") // Ensure this is your correct base URL
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();

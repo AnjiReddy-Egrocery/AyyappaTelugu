@@ -9,9 +9,17 @@
         android:id="@+id/dialog_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="It is important that You Under stand what information app collects and Uses "
+        android:text="Ayyappa Telugu :"
         android:textSize="18sp"
         android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="                         We use to collected mobile numbers for the following purposes. "
+        android:textSize="18sp"
+        android:layout_marginTop="12dp"
+        android:textStyle="normal"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,13 +29,13 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text=".Contact"
+            android:text="Phone Numbers :"
             android:textSize="16sp"
             android:textStyle="bold"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="To verify the mobile Number."
+            android:text="We do collect the Phone Numbers for User Friendly Mobile Authentication Process."
             android:textSize="16sp"
             android:layout_marginTop="8dp"
             android:layout_marginLeft="16dp"/>
@@ -41,13 +49,13 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text=".Location"
+            android:text="Location Information:"
             android:textSize="16sp"
             android:textStyle="bold"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Gathering to Temple Information."
+            android:text="Gathering to Temple Information.We may collect and use your device's location information to provide location-based services,"
             android:textSize="16sp"
             android:layout_marginTop="8dp"
             android:layout_marginLeft="16dp"/>
@@ -62,7 +70,7 @@
             android:id="@+id/simpleCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="By Continuing you agree to our Privacy Policy... "
+            android:text="By continuing, you acknowledge that you have read and agree to our Privacy Policy."
             android:textStyle="bold"
             android:textSize="16dp"/>
 

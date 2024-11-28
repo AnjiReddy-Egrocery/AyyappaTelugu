@@ -2,19 +2,31 @@ package com.dst.ayyapatelugu.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.dst.ayyapatelugu.Activity.AyyapaMandaliDetailsActivity;
 import com.dst.ayyapatelugu.Activity.AyyappaMandaliListActivity;
 import com.dst.ayyapatelugu.Model.BajanaManadaliListModel;
 import com.dst.ayyapatelugu.R;
+import com.dst.ayyapatelugu.Services.ImageLoader;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -40,7 +52,17 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
     @Override
     public void onBindViewHolder(AyyapamandaliAdapter.MyviewHolder holder, int position) {
         BajanaManadaliListModel modal = listModels.get(position);
-        String imgUrl = "https://www.ayyappatelugu.com/assets/user_images/" + modal.getProfilePic();
+        String profilePic = modal.getProfilePic();
+        String imgUrl = "https://www.ayyappatelugu.com/assets/user_images/"+profilePic ;
+
+        // Log the URL for debugging
+        Log.d("Image URL", "Image URL: " + imgUrl);
+
+        // Load the image using the custom loader
+        ImageLoader.loadImage(mContext, imgUrl, holder.image);
+
+
+
         String name = modal.getBajanamandaliName();
         String GuruNme = modal.getNameOfGuru();
         String City = modal.getBajanamandaliCity();
@@ -49,9 +71,9 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
         String discription = modal.getBajanamandaliDescription();
         holder.tvtitle.setText(name);
         holder.tvadd.setText(modal.getBajanamandaliLocation());
-        Picasso.get().load(imgUrl).into(holder.image);
 
-        holder.button.setOnClickListener(new View.OnClickListener() {
+
+        holder.layoutMandaliList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -81,19 +103,26 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
 
     }
 
+    public void updateData(List<BajanaManadaliListModel> newList) {
+        this.listModels = newList;
+        notifyDataSetChanged(); // Notify RecyclerView to refresh the list
+    }
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle, tvadd;
         ImageView image;
+        LinearLayout layoutMandaliList;
 
-        Button button;
+        //Button button;
 
         public MyviewHolder(View itemView) {
             super(itemView);
             tvtitle = (TextView) itemView.findViewById(R.id.txt_name);
             tvadd = (TextView) itemView.findViewById(R.id.txt_address);
             image = (ImageView) itemView.findViewById(R.id.img);
+            layoutMandaliList=(LinearLayout) itemView.findViewById(R.id.layout_mandali_list);
 
-            button = (Button) itemView.findViewById(R.id.but_mostpopular);
+           // button = (Button) itemView.findViewById(R.id.but_mostpopular);
         }
     }
 }

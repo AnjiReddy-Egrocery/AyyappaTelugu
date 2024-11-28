@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -14,6 +15,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
@@ -21,10 +24,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dst.ayyapatelugu.Adapter.AyyapakaryamListAdappter;
+import com.dst.ayyapatelugu.HomeActivity;
 import com.dst.ayyapatelugu.Model.KaryakaramamListModel;
 import com.dst.ayyapatelugu.Model.KaryakarmamList;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -58,6 +63,9 @@ public class AyyappaKaryamListActivity extends AppCompatActivity {
 
     private static final String PREF_NAME = "AyyappaData";
     private static final String KEY_DATA = "karyakarmamList";
+    ImageView imageAnadanam,imageNityaPooja;
+    TextView textAndanam,txtNityaPooja;
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
     @Override
@@ -66,9 +74,9 @@ public class AyyappaKaryamListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ayyappa_karyam_list);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.user_profile_background);
+     /*   toolbar.setLogo(R.drawable.user_profile_background);
         toolbar.setTitle("www.ayyappatelugu.com");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -83,6 +91,44 @@ public class AyyappaKaryamListActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        imageAnadanam=findViewById(R.id.layout_image_anadanam);
+        imageAnadanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyappaKaryamListActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        textAndanam = findViewById(R.id.layout_txt_anadanam);
+        textAndanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyappaKaryamListActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+        txtNityaPooja = findViewById(R.id.txt_nitya_pooja);
+        txtNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(AyyappaKaryamListActivity.this, NityaPoojaActivity.class);
+                startActivity(intent);
+
+            }
+        });
+        imageNityaPooja = findViewById(R.id.img_nitya_pooja);
+        imageNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyappaKaryamListActivity.this,NityaPoojaActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
         recyclerView = findViewById(R.id.recycler_karyakaramam);
         karyakaramamListModels=new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -113,7 +159,10 @@ public class AyyappaKaryamListActivity extends AppCompatActivity {
     private void fetchDataFromApi() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()

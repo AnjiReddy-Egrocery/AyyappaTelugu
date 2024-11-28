@@ -13,64 +13,87 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#BC0F0F" />
+            android:background="#BC0F0F">
+            <include
+                layout="@layout/headr_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
+
+    <include
+        layout="@layout/ayyappa_calender_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp"/>
+
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="65dp"
-        android:background="#E3F8FB"
-        android:orientation="vertical">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textStyle="bold"
-            android:textColor="#27ae60"
-            android:textSize="14dp"
-            android:text="శబరిమల ఆలయం దర్శనానికి అనుమతించు రోజుల వివరముల క్యాలెండరు"/>
+        android:layout_height="75dp"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom"
+        android:background="#FFF0D1">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:weightSum="3"
+            android:orientation="horizontal"
+            android:weightSum="5"
             android:gravity="center"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal">
+            android:layout_weight="1">
             <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/image_left"
-                android:src="@drawable/baseline_chevron_left_24"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
                 android:layout_weight="1"
-                android:visibility="visible"
-                android:gravity="center"/>
+                android:id="@+id/layout_image_anadanam"
+                android:layout_marginLeft="-20dp"
+                android:src="@drawable/location"/>
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="2023-24"
-                android:textStyle="bold"
-                android:textColor="#BC0F0F"
-                android:textSize="18dp"
-                android:id="@+id/txt_calender"
+                android:text="అన్నదానం"
                 android:layout_weight="1"
-                android:gravity="center"/>
+                android:id="@+id/layout_txt_anadanam"
+                android:textColor="#E41B1B"
+                android:gravity="center"
+                android:layout_marginLeft="-20dp"
+                android:textSize="20dp"
+                android:textStyle="bold"/>
+
             <ImageView
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/baseline_chevron_right_24"
                 android:layout_weight="1"
-                android:id="@+id/image_right"
-                android:gravity="center"/>
+                android:layout_marginLeft="-0dp"
+                android:src="@drawable/bottomcenter"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="నిత్య పూజ"
+                android:layout_weight="1"
+                android:textColor="#E41B1B"
+                android:textSize="20dp"
+                android:id="@+id/txt_nitya_pooja"
+                android:layout_marginRight="-18dp"
+                android:layout_marginLeft="-20dp"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_weight="1"
+                android:id="@+id/img_nitya_pooja"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="18dp"
+                android:layout_marginLeft="10dp"
+                android:src="@drawable/nithyapooja"/>
+
         </LinearLayout>
-
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="16dp"
-            android:id="@+id/recycler_calender"/>
     </LinearLayout>
+
 
 
 

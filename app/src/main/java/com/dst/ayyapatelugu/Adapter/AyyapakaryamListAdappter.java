@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,7 +48,7 @@ public class AyyapakaryamListAdappter extends RecyclerView.Adapter<AyyapakaryamL
         holder.tvdetails.setText(modal.getSmallDescription());
         Picasso.get().load(imgUrl).into(holder.image);
 
-        holder.butMoreDetails.setOnClickListener(new View.OnClickListener() {
+        holder.layoutPoojaList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, AyyapaKarmaDetailsActivity.class);
@@ -71,15 +72,17 @@ public class AyyapakaryamListAdappter extends RecyclerView.Adapter<AyyapakaryamL
     }
 
     public class MyviewHolder extends RecyclerView.ViewHolder {
-        TextView tvtitle, tvdetails, butMoreDetails;
+        TextView tvtitle, tvdetails;
         ImageView image;
+
+        LinearLayout layoutPoojaList;
 
         public MyviewHolder(View itemView) {
             super(itemView);
             tvtitle = (TextView) itemView.findViewById(R.id.txt);
             tvdetails = (TextView) itemView.findViewById(R.id.txt_details);
             image = (ImageView) itemView.findViewById(R.id.img);
-            butMoreDetails = (Button) itemView.findViewById(R.id.but_more_details);
+            layoutPoojaList = (LinearLayout) itemView.findViewById(R.id.layout_pooja_list);
         }
     }
 }

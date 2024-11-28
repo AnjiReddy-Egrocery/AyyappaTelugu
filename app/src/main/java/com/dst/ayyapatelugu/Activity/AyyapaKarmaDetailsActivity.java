@@ -6,9 +6,12 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spanned;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -22,10 +25,13 @@ public class AyyapaKarmaDetailsActivity extends AppCompatActivity {
 
     Toolbar toolbar;
 
-    TextView txtName;
-    WebView webView;
+    TextView txtName,textDiscription;
+    //WebView webView;
 
     ImageView imageView;
+
+    ImageView imageAnadanam,imageNityaPooja;
+    TextView textAndanam,txtNityaPooja;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
@@ -36,11 +42,11 @@ public class AyyapaKarmaDetailsActivity extends AppCompatActivity {
 
         toolbar = findViewById(R.id.toolbar);
 
-        toolbar.setLogo(R.drawable.user_profile_background);
+       /* toolbar.setLogo(R.drawable.user_profile_background);
 
 
         toolbar.setTitle("www.ayyappatelugu.com");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -58,8 +64,46 @@ public class AyyapaKarmaDetailsActivity extends AppCompatActivity {
             }
         });
 
+        imageAnadanam=findViewById(R.id.layout_image_anadanam);
+        imageAnadanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyapaKarmaDetailsActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        textAndanam = findViewById(R.id.layout_txt_anadanam);
+        textAndanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyapaKarmaDetailsActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        txtNityaPooja = findViewById(R.id.txt_nitya_pooja);
+        txtNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(AyyapaKarmaDetailsActivity.this, NityaPoojaActivity.class);
+                startActivity(intent);
+
+            }
+        });
+        imageNityaPooja = findViewById(R.id.img_nitya_pooja);
+        imageNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AyyapaKarmaDetailsActivity.this,NityaPoojaActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
         txtName = findViewById(R.id.txt_name);
-        webView = findViewById(R.id.webview);
+        textDiscription = findViewById(R.id.webview);
         imageView = findViewById(R.id.image_view);
 
         Bundle bundle = getIntent().getExtras();
@@ -70,7 +114,10 @@ public class AyyapaKarmaDetailsActivity extends AppCompatActivity {
 
         txtName.setText(name);
         Picasso.get().load(imagePath).into(imageView);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        Spanned spanned= Html.fromHtml(discription);
+        String plainText=spanned.toString();
+        textDiscription.setText(plainText);
+       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
             WebSettings webSettings = webView.getSettings();
             webSettings.setJavaScriptEnabled(true);
@@ -80,7 +127,7 @@ public class AyyapaKarmaDetailsActivity extends AppCompatActivity {
 
             //webView.loadData(discription, "text/html", "UTF-8");
 
-        }
+        }*/
 
     }
 }

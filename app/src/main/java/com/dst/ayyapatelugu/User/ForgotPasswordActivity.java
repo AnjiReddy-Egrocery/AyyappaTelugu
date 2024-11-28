@@ -27,6 +27,8 @@ import com.dst.ayyapatelugu.Model.ForgotDataResponse;
 import com.dst.ayyapatelugu.Model.VerifyUserDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.Credentials;
 import com.google.android.gms.auth.api.credentials.CredentialsApi;
@@ -65,7 +67,27 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         createPasswordButton = findViewById(R.id.but_create_pwd);
 
-        edtMobileNumber.setOnClickListener(view -> startCredentialPicker());
+        edtMobileNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                HintRequest hintRequest = new HintRequest.Builder()
+                        .setPhoneNumberIdentifierSupported(true)
+                        .build();
+
+
+                PendingIntent intent = Credentials.getClient(getApplicationContext()).getHintPickerIntent(hintRequest);
+                try
+                {
+                    startIntentSenderForResult(intent.getIntentSender(), CREDENTIAL_PICKER_REQUEST, null, 0, 0, 0,new Bundle());
+                }
+                catch (IntentSender.SendIntentException e)
+                {
+                    e.printStackTrace();
+                }
+
+            }
+
+        });
 
         createPasswordButton.setOnClickListener(view -> handlePasswordChange());
     }
@@ -84,24 +106,15 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
 
-    private void startCredentialPicker() {
-        HintRequest hintRequest = new HintRequest.Builder()
-                .setPhoneNumberIdentifierSupported(true)
-                .build();
 
-
-        PendingIntent intent = Credentials.getClient(getApplicationContext()).getHintPickerIntent(hintRequest);
-        try {
-            startIntentSenderForResult(intent.getIntentSender(), CREDENTIAL_PICKER_REQUEST, null, 0, 0, 0, new Bundle());
-        } catch (IntentSender.SendIntentException e) {
-            e.printStackTrace();
-        }
-    }
 
     private void validationMethod(String mobileNumber) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
@@ -161,18 +174,26 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == RESULT_OK) {
+
+
+
+        if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == RESULT_OK)
+        {
             // Obtain the phone number from the result
             Credential credentials = data.getParcelableExtra(Credential.EXTRA_KEY);
             edtMobileNumber.setText(credentials.getId().substring(3)); //get the selected phone number
 //Do what ever you want to do with your selected phone number here
 
 
-        } else if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == CredentialsApi.ACTIVITY_RESULT_NO_HINTS_AVAILABLE) {
+        }
+        else if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == CredentialsApi.ACTIVITY_RESULT_NO_HINTS_AVAILABLE)
+        {
             // *** No phone numbers available ***
             Toast.makeText(ForgotPasswordActivity.this, "No phone numbers found", Toast.LENGTH_LONG).show();
         }
+
     }
+
 }
 
 

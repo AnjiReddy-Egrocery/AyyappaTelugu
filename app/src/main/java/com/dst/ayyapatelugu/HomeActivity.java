@@ -8,20 +8,25 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.ViewPager;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,10 +43,33 @@ import com.dst.ayyapatelugu.Activity.AyyappaTourseDetailsACtivity;
 import com.dst.ayyapatelugu.Activity.CalenderActivity;
 import com.dst.ayyapatelugu.Activity.DevlyaluActivity;
 import com.dst.ayyapatelugu.Activity.GuruSwamiListActivity;
-import com.dst.ayyapatelugu.Adapter.ViewPagerAdapter;
+import com.dst.ayyapatelugu.Activity.NityaPoojaActivity;
+import com.dst.ayyapatelugu.Activity.ProductsListActivity;
+import com.dst.ayyapatelugu.Activity.ViewAllAyyappaTemplesActivity;
+import com.dst.ayyapatelugu.Activity.ViewAllDetailsActivity;
+import com.dst.ayyapatelugu.Activity.ViewAllNewsListActivity;
+import com.dst.ayyapatelugu.Activity.ViewAllTemplesActivity;
+import com.dst.ayyapatelugu.Adapter.AyyappaListAdapter;
+import com.dst.ayyapatelugu.Adapter.AyyappaTemplesListAdapter;
+import com.dst.ayyapatelugu.Adapter.NewsListAdapter;
+import com.dst.ayyapatelugu.Adapter.SevaListAdapter;
+import com.dst.ayyapatelugu.Adapter.ViewAllNewsListAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedPrefManager;
+import com.dst.ayyapatelugu.DataBase.SharedPreferencesHelper;
+import com.dst.ayyapatelugu.DataBase.SharedPreferencesManager;
+import com.dst.ayyapatelugu.Model.AyyaTempleListModel;
+import com.dst.ayyapatelugu.Model.AyyappaTempleList;
 import com.dst.ayyapatelugu.Model.LoginDataResponse;
+import com.dst.ayyapatelugu.Model.NewsList;
+import com.dst.ayyapatelugu.Model.NewsListModel;
+import com.dst.ayyapatelugu.Model.SevaList;
+import com.dst.ayyapatelugu.Model.SevaListModel;
+import com.dst.ayyapatelugu.Model.TemplesList;
+import com.dst.ayyapatelugu.Model.TemplesListModel;
+import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.dst.ayyapatelugu.User.LoginActivity;
+import com.dst.ayyapatelugu.User.PrivacyPolicyActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -49,35 +77,75 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    Configuration configuration;
     NavigationView mNavigationView;
     DrawerLayout drawerLayout;
     Toolbar toolbar;
-    ViewPager mViewPager;
-    ViewPagerAdapter mViewPagerAdapter;
     ActionBarDrawerToggle toggle;
-
-    Timer timer;
-
-    int[] images = {R.drawable.banner1, R.drawable.banner2,R.drawable.baneer};
-
-    GoogleSignInOptions gso;
-    GoogleSignInClient gsc;
 
     TextView txtName, txtEmail;
     ImageView imageView;
+    GoogleSignInOptions gso;
+    GoogleSignInClient gsc;
+
+    LinearLayout layoutSeva;
+    Button buttonViewAll;
+
+    Button butAllNews;
+    RecyclerView recyclerviewnews;
+
+    List<NewsListModel> newsList;
+
+    NewsListAdapter viewNewsListAdapter;
+
+
+
+    List<TemplesListModel> templeList;
+    RecyclerView recyclerviewTemples;
+
+    AyyappaTemplesListAdapter ayyappaTemplesListAdapter;
+    private LinearLayoutManager layoutManagerTemple;
+
+
+
+    List<AyyaTempleListModel> ayyaTempleListModels;
+    RecyclerView recyclerviewAyyappaTemples;
+
+    AyyappaListAdapter ayyappaListAdapter;
+    private LinearLayoutManager layoutManagerAyyappaTemple;
+
 
     private static final int REQUEST_PERMISSION_CODE = 1;
 
+    LinearLayout layoutBhajanamandali,layoutGuruSwami,layoutPoojaPetam,layoutCalender,layoutTourse,layoutAnadanam,layoutBooks,layoutProducts;
+    ImageView imageAnadanam,imageNityaPooja;
+    TextView textAndanam,txtNityaPooja;
 
-    LinearLayout layoutAyyapaKaryam, layoutGuruswamiList, layoutAyyappaMandali, layoutAyyappaBooks, layoutTourse, layoutDecaration;
+    private ImageView leftIcon, rightIcon,leftIconAyyappa, rightIconAyyappa,leftnews,rightnews;
+
+    Button butViewAll,viewallButton;
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,12 +157,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout = findViewById(R.id.drawer);
         mNavigationView = findViewById(R.id.nav_view);
         toolbar = findViewById(R.id.toolbar);
-        mViewPager = (ViewPager) findViewById(R.id.viewPagerMain);
-        toolbar.setLogo(R.drawable.user_profile_background);
-        toolbar.setTitle("స్వామి శరణం అయ్యప్ప");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+
+
+
         setSupportActionBar(toolbar);
-        ;
+
         toolbar.setLogoDescription(getResources().getString(R.string.title_tool_bar)); // set description for the logo
         getSupportActionBar().setDisplayShowTitleEnabled(true);
         toggle = new ActionBarDrawerToggle(
@@ -103,87 +170,124 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        layoutBhajanamandali = findViewById(R.id.layout_bhajana_mandali);
+        layoutBhajanamandali.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent mandaliIntent=new Intent(HomeActivity.this,AyyappaMandaliListActivity.class);
+                startActivity(mandaliIntent);
+            }
+        });
+
+        layoutGuruSwami = findViewById(R.id.layout_guru_swami);
+        layoutGuruSwami.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent guruswamiIntent=new Intent(HomeActivity.this,GuruSwamiListActivity.class);
+                startActivity(guruswamiIntent);
+            }
+        });
+
+        layoutPoojaPetam = findViewById(R.id.layout_poojapetam);
+        layoutPoojaPetam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this,AyyappaPetamListActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        layoutCalender= findViewById(R.id.layout_calender);
+        layoutCalender.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent calenderIntent=new Intent(HomeActivity.this,CalenderActivity.class);
+                startActivity(calenderIntent);
+            }
+        });
+
+        layoutTourse = findViewById(R.id.layout_tourse);
+        layoutTourse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent tourseIntent=new Intent(HomeActivity.this,AyyappaTourseDetailsACtivity.class);
+                startActivity(tourseIntent);
+            }
+        });
+
+        imageAnadanam=findViewById(R.id.layout_image_anadanam);
+        imageAnadanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        textAndanam = findViewById(R.id.layout_txt_anadanam);
+        textAndanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        layoutAnadanam = findViewById(R.id.layout_anadanam);
+        layoutAnadanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        txtNityaPooja = findViewById(R.id.txt_nitya_pooja);
+        txtNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(HomeActivity.this, NityaPoojaActivity.class);
+                startActivity(intent);
+
+            }
+        });
+        imageNityaPooja = findViewById(R.id.img_nitya_pooja);
+        imageNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this,NityaPoojaActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        layoutBooks = findViewById(R.id.layout_books);
+        layoutBooks.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this,AyyapaBooksListActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        layoutProducts = findViewById(R.id.layout_products);
+        layoutProducts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(HomeActivity.this, ProductsListActivity.class);
+                startActivity(intent);
+
+            }
+        });
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mViewPagerAdapter = new ViewPagerAdapter(HomeActivity.this, images);
-        mViewPager.setAdapter(mViewPagerAdapter);
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                mViewPager.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mViewPager.setCurrentItem((mViewPager.getCurrentItem() + 4) % images.length);
-                    }
-                });
-            }
-        };
-        timer = new Timer();
-        timer.schedule(timerTask, 4000, 4000);
-        mViewPager.setCurrentItem(0);
-        layoutAyyapaKaryam = findViewById(R.id.layout_karyam);
-        layoutGuruswamiList = findViewById(R.id.guru_swami_list);
-        layoutAyyappaMandali = findViewById(R.id.ayyapa_mandali);
-        layoutAyyappaBooks = findViewById(R.id.ayyappa_books);
-        layoutTourse = findViewById(R.id.ayyapa_decaration);
-        layoutDecaration = findViewById(R.id.ayyappa_tourse);
-
-        layoutAyyapaKaryam.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(HomeActivity.this, AyyappaKaryamListActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        layoutGuruswamiList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this, GuruSwamiListActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        layoutAyyappaMandali.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this, AyyappaMandaliListActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        layoutAyyappaBooks.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(HomeActivity.this, AyyapaBooksListActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        layoutDecaration.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(HomeActivity.this, AyyappaPetamListActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        layoutTourse.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(HomeActivity.this, AyyappaTourseDetailsACtivity.class);
-                startActivity(intent);
-            }
-        });
         View headerView = navigationView.getHeaderView(0);
-        txtName = (TextView) headerView.findViewById(R.id.txt_name);
-        txtEmail = (TextView) headerView.findViewById(R.id.txt_email);
-        imageView = (ImageView) headerView.findViewById(R.id.nav_image);
+        txtName = (TextView) headerView.findViewById(R.id.txt_header_name);
+        txtEmail = (TextView) headerView.findViewById(R.id.txt_header_email);
+        imageView = (ImageView) headerView.findViewById(R.id.nav_header_image);
 
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         gsc = GoogleSignIn.getClient(HomeActivity.this, gso);
@@ -191,6 +295,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         String name="";
         String email="";
+
 
         if (account != null) {
             name = account.getDisplayName().toString();
@@ -208,7 +313,327 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         txtName.setText(name);
         txtEmail.setText(email);
 
+
         checkAndRequestPermissions();
+
+        sevaMethod();
+
+        newsMethod();
+
+        TemplesListMethod();
+        AyyaTemplesListMethod();
+
+    }
+
+    private void newsMethod() {
+        butAllNews = findViewById(R.id.viewall_but_news);
+        recyclerviewnews = findViewById(R.id.recycler_news);
+        newsList = new ArrayList<>();
+
+        LinearLayoutManager layoutManager =new LinearLayoutManager(this);
+        recyclerviewnews.setLayoutManager(layoutManager);
+
+        //fechedDatafromShredPreferences();
+        butAllNews.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentnews=new Intent(HomeActivity.this,ViewAllNewsListActivity.class);
+                startActivity(intentnews);
+            }
+        });
+
+        newsfechedDatafromShredPreferences();
+    }
+
+    private void newsfechedDatafromShredPreferences() {
+        List<NewsListModel> newsListModels= SharedPreferencesManager.getNewsList(HomeActivity.this);
+        if (newsListModels != null && !newsListModels.isEmpty()) {
+            // Data exists in SharedPreferences, update RecyclerView
+            newsupdateRecyclerView(newsListModels);
+        } else {
+            // Data doesn't exist in SharedPreferences, fetch from the network
+            newsfetchDataFromDataBase();
+        }
+    }
+
+    private void newsfetchDataFromDataBase() {
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
+                .addInterceptor(loggingInterceptor)
+                .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+        APiInterface apiClient = retrofit.create(APiInterface.class);
+        Call<NewsList> call = apiClient.getNewsList();
+        call.enqueue(new Callback<NewsList>() {
+            @Override
+            public void onResponse(Call<NewsList> call, Response<NewsList> response) {
+                NewsList newsList1=response.body();
+                newsList = new ArrayList<>(Arrays.asList(newsList1.getResult()));
+
+                SharedPreferencesManager.saveNewsList(HomeActivity.this, newsList);
+
+                newsupdateRecyclerView(newsList);
+            }
+
+            @Override
+            public void onFailure(Call<NewsList> call, Throwable t) {
+                newsList = SharedPreferencesManager.getNewsList(HomeActivity.this);
+                if (newsList != null && !newsList.isEmpty()) {
+                    Log.d("Data Check", "NewsList size: " + newsList.size());
+                    newsupdateRecyclerView(newsList);
+                }
+
+            }
+        });
+    }
+
+    private void newsupdateRecyclerView(List<NewsListModel> newsListModels) {
+        viewNewsListAdapter = new NewsListAdapter(HomeActivity.this,newsListModels);
+        recyclerviewnews.setAdapter(viewNewsListAdapter);
+    }
+
+    private void AyyaTemplesListMethod() {
+        recyclerviewAyyappaTemples = findViewById(R.id.recycler_ayyappa_temples);
+        viewallButton = findViewById(R.id.viewall_but);
+        viewallButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent= new Intent(HomeActivity.this, ViewAllAyyappaTemplesActivity.class);
+                startActivity(intent);
+            }
+        });
+        leftIconAyyappa = findViewById(R.id.leftIcon1);
+        rightIconAyyappa = findViewById(R.id.rightIcon1);
+        ayyaTempleListModels = new ArrayList<>();
+
+        layoutManagerAyyappaTemple =new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
+        recyclerviewAyyappaTemples.setLayoutManager(layoutManagerAyyappaTemple);
+
+        ayyappafechedDatafromShredPreferences();
+
+        leftIconAyyappa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scrollRecyclerViewLeftayyappa();
+            }
+        });
+
+        rightIconAyyappa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scrollRecyclerViewRightayyappa();
+            }
+        });
+
+    }
+
+    private void scrollRecyclerViewRightayyappa() {
+        int visiblePosition = layoutManagerAyyappaTemple.findLastVisibleItemPosition();
+        if (visiblePosition < ayyappaListAdapter.getItemCount() - 1) {
+            recyclerviewAyyappaTemples.smoothScrollToPosition(visiblePosition + 1);
+        }
+    }
+
+    private void scrollRecyclerViewLeftayyappa() {
+        int visiblePosition = layoutManagerAyyappaTemple.findFirstVisibleItemPosition();
+        if (visiblePosition > 0) {
+            recyclerviewAyyappaTemples.smoothScrollToPosition(visiblePosition - 1);
+        }
+    }
+
+    private void ayyappafechedDatafromShredPreferences() {
+        List<AyyaTempleListModel> templesListModels= SharedPreferencesManager.getAyyappaTemplesList(HomeActivity.this);
+        if (templesListModels != null && !templesListModels.isEmpty()) {
+            // Data exists in SharedPreferences, update RecyclerView
+            ayyappaupdateRecyclerView(templesListModels);
+        } else {
+            // Data doesn't exist in SharedPreferences, fetch from the network
+           ayyappafetchDataFromDataBase();
+        }
+    }
+
+    private void ayyappafetchDataFromDataBase() {
+
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
+                .addInterceptor(loggingInterceptor)
+                .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+        APiInterface apiClient = retrofit.create(APiInterface.class);
+        Call<AyyappaTempleList> modelCall=apiClient.getAyyappaTempleList();
+        modelCall.enqueue(new Callback<AyyappaTempleList>() {
+            @Override
+            public void onResponse(Call<AyyappaTempleList> call, Response<AyyappaTempleList> response) {
+                AyyappaTempleList list=response.body();
+                ayyaTempleListModels=new ArrayList<>(Arrays.asList(list.getResult()));
+
+                SharedPreferencesManager.saveAyyappaTempleList(HomeActivity.this, ayyaTempleListModels);
+
+                ayyappaupdateRecyclerView(ayyaTempleListModels);
+
+            }
+
+            @Override
+            public void onFailure(Call<AyyappaTempleList> call, Throwable t) {
+                ayyaTempleListModels = SharedPreferencesManager.getAyyappaTemplesList(HomeActivity.this);
+                if (ayyaTempleListModels != null && !ayyaTempleListModels.isEmpty()) {
+                    // Update the RecyclerView
+                    ayyappaupdateRecyclerView(ayyaTempleListModels);
+                }
+
+            }
+        });
+
+    }
+
+    private void ayyappaupdateRecyclerView(List<AyyaTempleListModel> templesListModels) {
+        ayyappaListAdapter = new AyyappaListAdapter(HomeActivity.this,templesListModels);
+        recyclerviewAyyappaTemples.setAdapter(ayyappaListAdapter);
+    }
+
+    private void TemplesListMethod() {
+        recyclerviewTemples = findViewById(R.id.recycler_temples);
+        butViewAll = findViewById(R.id.but_viewAll);
+        butViewAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent= new Intent(HomeActivity.this, ViewAllTemplesActivity.class);
+                startActivity(intent);
+            }
+        });
+        leftIcon = findViewById(R.id.leftIcon);
+        rightIcon = findViewById(R.id.rightIcon);
+        templeList = new ArrayList<>();
+
+         layoutManagerTemple =new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
+        recyclerviewTemples.setLayoutManager(layoutManagerTemple);
+
+        fechedDatafromShredPreferences();
+
+        leftIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scrollRecyclerViewLeft();
+            }
+        });
+
+        rightIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scrollRecyclerViewRight();
+            }
+        });
+    }
+
+    private void scrollRecyclerViewRight() {
+        int visiblePosition = layoutManagerTemple.findLastVisibleItemPosition();
+        if (visiblePosition < ayyappaTemplesListAdapter.getItemCount() - 1) {
+            recyclerviewTemples.smoothScrollToPosition(visiblePosition + 1);
+        }
+    }
+
+    private void scrollRecyclerViewLeft() {
+        int visiblePosition = layoutManagerTemple.findFirstVisibleItemPosition();
+        if (visiblePosition > 0) {
+            recyclerviewTemples.smoothScrollToPosition(visiblePosition - 1);
+        }
+    }
+
+    private void fechedDatafromShredPreferences() {
+        List<TemplesListModel> templesListModels= SharedPreferencesManager.getTemplesList(HomeActivity.this);
+        if (templesListModels != null && !templesListModels.isEmpty()) {
+            // Data exists in SharedPreferences, update RecyclerView
+            updateRecyclerView(templesListModels);
+        } else {
+            // Data doesn't exist in SharedPreferences, fetch from the network
+            fetchDataFromDataBase();
+        }
+    }
+
+    private void fetchDataFromDataBase() {
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
+                .addInterceptor(loggingInterceptor)
+                .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+        APiInterface apiClient = retrofit.create(APiInterface.class);
+        Call<TemplesList> modelCall=apiClient.getTempleList();
+        modelCall.enqueue(new Callback<TemplesList>() {
+            @Override
+            public void onResponse(Call<TemplesList> call, Response<TemplesList> response) {
+                TemplesList list=response.body();
+                templeList=new ArrayList<>(Arrays.asList(list.getResult()));
+
+                SharedPreferencesManager.saveTempleList(HomeActivity.this, templeList);
+
+                updateRecyclerView(templeList);
+
+            }
+
+            @Override
+            public void onFailure(Call<TemplesList> call, Throwable t) {
+                templeList = SharedPreferencesManager.getTemplesList(HomeActivity.this);
+                if (templeList != null && !templeList.isEmpty()) {
+                    // Update the RecyclerView
+                    updateRecyclerView(templeList);
+                }
+
+            }
+        });
+
+    }
+
+    private void updateRecyclerView(List<TemplesListModel> templesListModels) {
+
+        ayyappaTemplesListAdapter = new AyyappaTemplesListAdapter(HomeActivity.this,templesListModels);
+        recyclerviewTemples.setAdapter(ayyappaTemplesListAdapter);
+
+    }
+
+
+
+    private void sevaMethod() {
+        buttonViewAll = findViewById(R.id.but_view_all);
+        layoutSeva = findViewById(R.id.layout_seva_grid);
+        buttonViewAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this, ViewAllDetailsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        layoutSeva.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(HomeActivity.this, ViewAllDetailsActivity.class);
+                startActivity(intent);
+            }
+        });
 
     }
 
@@ -230,6 +655,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
             }
         }
+
     }
 
     private boolean arePermissionsGranted(String[] permissions) {
@@ -239,17 +665,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
         }
         return true;
+
     }
-
-
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == REQUEST_PERMISSION_CODE) {
             if (!areAllPermissionsGranted(grantResults)) {
-               // showPermissionDeniedDialog();
+                // showPermissionDeniedDialog();
             }
         }
     }
@@ -257,17 +681,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onDestroy() {
-        timer.cancel();
+       // timer.cancel();
         super.onDestroy();
     }
 
+    @Override
     public void onBackPressed() {
-        showExitConfirmationDialog();
+        showExitConfirmationDialog(); // Show the exit confirmation dialog first
     }
 
     private void showExitConfirmationDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Do you want to exit the Ayyappa Telugu?")
+        builder.setMessage("Do you want to exit Ayyappa Telugu?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -275,6 +700,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         a.addCategory(Intent.CATEGORY_HOME);
                         a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(a);
+                        finish(); // Finish the current activity
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -300,7 +726,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-       return true;
+        return true;
     }
 
     @Override
@@ -370,6 +796,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             Intent intent=new Intent(HomeActivity.this, AyyaappaDevlyaluActivity.class);
             startActivity(intent);
 
+        }else if(action == R.id.ayyappa_policy){
+
+            Intent intent=new Intent(HomeActivity.this, PrivacyPolicyActivity.class);
+            startActivity(intent);
+
         }else if (action == R.id.log_out) {
             gsc.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
@@ -386,4 +817,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+
 }

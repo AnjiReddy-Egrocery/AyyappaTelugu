@@ -2,11 +2,15 @@ package com.dst.ayyapatelugu.User;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.method.HideReturnsTransformationMethod;
@@ -28,10 +32,12 @@ import com.dst.ayyapatelugu.Model.UserDataResponse;
 import com.dst.ayyapatelugu.Model.VerifyUserDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.Credentials;
 import com.google.android.gms.auth.api.credentials.CredentialsApi;
+import com.google.android.gms.auth.api.credentials.CredentialsClient;
 import com.google.android.gms.auth.api.credentials.HintRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -68,7 +74,7 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     private static final int RC_SIGN_UP_WITH_GOOGLE = 9002;
 
     private static final int PERMISSION_REQUEST_CODE = 1;
-    private ProgressBar progressBar;
+
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -85,7 +91,7 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         layoutLogin = findViewById(R.id.layout_login);
         butRegister = findViewById(R.id.but_register);
         //linearSignUpWithGmail=findViewById(R.id.layout_signup_gmail);
-        progressBar = findViewById(R.id.progressBar);
+
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -100,7 +106,7 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         edtNumber.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startCredentialPicker();
+                checkAndRequestPermissions();
             }
         });
 
@@ -143,9 +149,32 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
                         && doPasswordsMatch(password, reEnterPassword)) {
 
                     validationMethod(name, lastname, number, email, password);
+                    //Toast.makeText(RegisterActivity.this,"Data is Saved",Toast.LENGTH_LONG).show();
                 }
             }
         });
+    }
+
+    private void checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_PHONE_STATE},
+                    1);
+        } else {
+            startCredentialPicker();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCredentialPicker();
+            } else {
+                Toast.makeText(this, "Permission denied to read phone state", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void startCredentialPicker() {
@@ -153,17 +182,22 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
                 .setPhoneNumberIdentifierSupported(true)
                 .build();
 
+        CredentialsClient credentialsClient = Credentials.getClient(this);
+        PendingIntent pendingIntent = credentialsClient.getHintPickerIntent(hintRequest);
 
-        PendingIntent intent = Credentials.getClient(getApplicationContext()).getHintPickerIntent(hintRequest);
-        try
-        {
-            startIntentSenderForResult(intent.getIntentSender(), CREDENTIAL_PICKER_REQUEST, null, 0, 0, 0,new Bundle());
-        }
-        catch (IntentSender.SendIntentException e)
-        {
+        try {
+            startIntentSenderForResult(
+                    pendingIntent.getIntentSender(),
+                    CREDENTIAL_PICKER_REQUEST,
+                    null,
+                    0,
+                    0,
+                    0,
+                    new Bundle()
+            );
+        } catch (IntentSender.SendIntentException e) {
             e.printStackTrace();
         }
-
     }
 
     public void ShowHidePass(View view) {
@@ -251,10 +285,19 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     private void validationMethod(String name, String lastname, String number, String email, String password) {
-        progressBar.setVisibility(View.VISIBLE);
+        Log.d("RegisterActivity", "Validation method called with: " +
+                "Name: " + name +
+                ", Lastname: " + lastname +
+                ", Number: " + number +
+                ", Email: " + email +
+                ", Password: " + password);
+        //progressBar.setVisibility(View.VISIBLE);
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
@@ -268,43 +311,46 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         RequestBody emailPart = RequestBody.create(MediaType.parse("text/plain"), email);
         RequestBody mobileNumberPart = RequestBody.create(MediaType.parse("text/plain"), number);
         RequestBody pwdPart = RequestBody.create(MediaType.parse("text/plain"), password);
+        Log.d("RegisterActivity", "Prepared request body for API call.");
         Call<UserDataResponse> call = apiClient.postData(firstnamePart, lastnamePart, emailPart, mobileNumberPart, pwdPart);
         call.enqueue(new Callback<UserDataResponse>() {
             @Override
             public void onResponse(Call<UserDataResponse> call, Response<UserDataResponse> response) {
+                Log.d("RegisterActivity", "Response received: " + response.toString());
+
                 if (response.isSuccessful()) {
-                    progressBar.setVisibility(View.INVISIBLE);
                     UserDataResponse userDataResponse = response.body();
-                    if (userDataResponse.getErrorCode().equals("203")) {
-                        Toast.makeText(RegisterActivity.this, "Email and Mobile Number alerady Exists", Toast.LENGTH_SHORT).show();
-                    } else if (userDataResponse.getErrorCode().equals("200")) {
-                        String registerId = "";
-                        String otp = "";
-                        Log.e("USERDADA", "list: " + userDataResponse.getResult());
-                        List<UserDataResponse.Result> list = userDataResponse.getResult();
-                        for (int i = 0; i < list.size(); i++) {
-                            registerId = list.get(i).getRegisterId();
-                            otp = list.get(i).getOtp();
-                            Log.e("registerId", "registerId: " + registerId);
+                    if (userDataResponse != null) { // Check for null response
+                        Log.d("RegisterActivity", "UserDataResponse received with error code: " + userDataResponse.getErrorCode());
+
+                        if (userDataResponse.getErrorCode().equals("203")) {
+                            Toast.makeText(RegisterActivity.this, "Email and Mobile Number already exist", Toast.LENGTH_SHORT).show();
+                        } else if (userDataResponse.getErrorCode().equals("200")) {
+                            String registerId = "";
+                            String otp = "";
+                            List<UserDataResponse.Result> list = userDataResponse.getResult();
+                            for (UserDataResponse.Result result : list) {
+                                registerId = result.getRegisterId();
+                                otp = result.getOtp();
+                            }
+                            Log.d("RegisterActivity", "Registration successful. Register ID: " + registerId + ", OTP: " + otp);
+                            Toast.makeText(RegisterActivity.this, "User Registration Completed Successfully", Toast.LENGTH_LONG).show();
+                            conformationDialog(registerId, otp);
                         }
-                        Toast.makeText(RegisterActivity.this, "User Registration Completed Successfully", Toast.LENGTH_LONG).show();
-                        /*Intent intent = new Intent(RegisterActivity.this, VerifyActivity.class);
-                        intent.putExtra("registerId", registerId);
-                        intent.putExtra("otp", otp);
-                        startActivity(intent);*/
-
-                        conformationDialog(registerId,otp);
-
-                        //otpVerfication(registerId,otp);
+                    } else {
+                        Log.e("RegisterActivity", "UserDataResponse is null.");
+                        Toast.makeText(RegisterActivity.this, "Data Error: No response received", Toast.LENGTH_LONG).show();
                     }
                 } else {
+                    Log.e("RegisterActivity", "Response error: " + response.errorBody().toString());
                     Toast.makeText(RegisterActivity.this, "Data Error", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<UserDataResponse> call, Throwable t) {
-                progressBar.setVisibility(View.INVISIBLE);
+                Log.e("RegisterActivity", "Network Error: " + t.getMessage());
+                Toast.makeText(RegisterActivity.this, "Network Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -344,13 +390,17 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
             builder.create().dismiss();
         });
 
-        builder.create().dismiss();
+        // Show the dialog
+        builder.create().show();
     }
 
     private void otpVerfication(String registerId, String otp) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
@@ -405,22 +455,23 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
             }
         }*/
 
-        if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == RESULT_OK)
-        {
-            // Obtain the phone number from the result
-            Credential credentials = data.getParcelableExtra(Credential.EXTRA_KEY);
-            edtNumber.setText(credentials.getId().substring(3)); //get the selected phone number
-//Do what ever you want to do with your selected phone number here
 
-
-        }
-        else if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == CredentialsApi.ACTIVITY_RESULT_NO_HINTS_AVAILABLE)
-        {
-            // *** No phone numbers available ***
-            Toast.makeText(RegisterActivity.this, "No phone numbers found", Toast.LENGTH_LONG).show();
+        if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == RESULT_OK && data != null) {
+            Credential credential = data.getParcelableExtra(Credential.EXTRA_KEY);
+            if (credential != null) {
+                String selectedPhoneNumber = credential.getId();
+               // EditText editText = findViewById(R.id.edt_mobile_number);
+                if (edtNumber != null) {
+                    edtNumber.setText(selectedPhoneNumber);
+                } else {
+                    Log.e("RegisterActivity", "EditText is null!");
+                }
+            }
         }
 
     }
+
+
 
     private GoogleSignInAccount handleSignInResult(GoogleSignInResult signInResultFromIntent) {
         if (signInResultFromIntent.isSuccess()) {

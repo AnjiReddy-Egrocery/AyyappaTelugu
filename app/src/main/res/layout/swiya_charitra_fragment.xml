@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:text="అయ్యప్ప స్వామి పూజ చేపించాలని తపన ఉన్నా కానీ డబ్బులు లేని వారికోసం మేము మా వంతు సహాయంగా పురోహితం ఉచితంగా జరిపిస్తాము. "
             android:textSize="16dp"
-            android:textColor="#000"
+            android:textColor="#fff"
             android:textStyle="normal"/>
     </LinearLayout>
 

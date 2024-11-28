@@ -3,4 +3,5 @@
     <string name="width">50dp</string>
     <string name="margin_top">16dp</string>
     <string name="margin_top_btn">30dp</string>
+    <dimen name="fab_margin">16dp</dimen>
 </resources>

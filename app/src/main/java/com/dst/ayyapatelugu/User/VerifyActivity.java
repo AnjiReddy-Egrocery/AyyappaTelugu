@@ -15,6 +15,7 @@ import com.dst.ayyapatelugu.Model.UserDataResponse;
 import com.dst.ayyapatelugu.Model.VerifyUserDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 
 import java.util.List;
 
@@ -55,21 +56,6 @@ public class VerifyActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 VerificationMethod(registationId,otp);
-               /*otp=edtOtp.getText().toString().trim();
-
-               if (!isValidOtp(otp)){
-                   edtOtp.setError("Please Enter Valid otp");
-               }else {
-
-               }
-
-                if (isValidOtp(otp)){
-
-                    VerificationMethod(registationId,otp);
-                } else {
-                    Toast.makeText(VerifyActivity.this, "Validation failed. Please check your input.", Toast.LENGTH_SHORT).show();
-                }*/
-
 
             }
         });
@@ -80,9 +66,13 @@ public class VerifyActivity extends AppCompatActivity {
     private void VerificationMethod(String registationId, String otp) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.ayyappatelugu.com/") // Replace with your API URL
                 .addConverterFactory(GsonConverterFactory.create())

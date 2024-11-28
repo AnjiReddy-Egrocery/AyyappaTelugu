@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,7 +54,7 @@ public class AyyappaTourseDetailsAdapter extends RecyclerView.Adapter<AyyappaTou
 
         Picasso.get().load(imgUrl).into(holder.image);
 
-        holder.butDetails.setOnClickListener(new View.OnClickListener() {
+        holder.layoutTourseDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, AyyappaTourseActivity.class);
@@ -82,8 +83,9 @@ public class AyyappaTourseDetailsAdapter extends RecyclerView.Adapter<AyyappaTou
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle, tvaddress, tvdetails, tvamount;
         ImageView image;
+        LinearLayout layoutTourseDetails;
 
-        Button butDetails;
+        //Button butDetails;
 
         public MyviewHolder(View itemView) {
             super(itemView);
@@ -92,7 +94,8 @@ public class AyyappaTourseDetailsAdapter extends RecyclerView.Adapter<AyyappaTou
             tvdetails = (TextView) itemView.findViewById(R.id.txt_details);
             tvamount = (TextView) itemView.findViewById(R.id.txt_amount);
             image = (ImageView) itemView.findViewById(R.id.img);
-            butDetails = (Button) itemView.findViewById(R.id.but_details);
+            layoutTourseDetails = (LinearLayout) itemView.findViewById(R.id.layout_tourse_details);
+            //butDetails = (Button) itemView.findViewById(R.id.but_details);
 
         }
 

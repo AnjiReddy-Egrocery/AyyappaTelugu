@@ -35,9 +35,9 @@ import com.dst.ayyapatelugu.Model.MapDataResponse;
 
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -79,10 +79,6 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
     private static final float ZOOM_LEVEL_OUT = -1.0f;
 
     private List<MapDataResponse.Result> mapList;
-
-
-
-
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -91,9 +87,9 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
         setContentView(R.layout.activity_anadanam);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.user_profile_background);
+       /* toolbar.setLogo(R.drawable.user_profile_background);
         toolbar.setTitle("www.ayyappatelugu.com");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
         setSupportActionBar(toolbar);
         ;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -140,7 +136,10 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
@@ -283,8 +282,8 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
             title.setText(marker.getTitle());
 
             TextView txtLocation = mContentsView.findViewById(R.id.info_location);
-            String address = (String) marker.getTag();
-            txtLocation.setText(address);
+            //String address = (String) marker.getTag();
+            txtLocation.setText(marker.getSnippet());
 
             // Handle the "Start Navigation" button click
             Button startNavigationButton = mContentsView.findViewById(R.id.start_navigation_button);
@@ -347,11 +346,12 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
     private void displayCurrentUserLocation() {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
@@ -381,7 +381,8 @@ public class AnadanamActivity extends AppCompatActivity implements OnMapReadyCal
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                displayCurrentUserLocation();
+               // displayCurrentUserLocation();
+                initMap();
             }
         }
     }

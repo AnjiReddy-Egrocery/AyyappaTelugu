@@ -39,6 +39,7 @@ import com.dst.ayyapatelugu.Model.MapDataResponse;
 import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -100,9 +101,9 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
         setContentView(R.layout.activity_ayyaappa_devlyalu);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.user_profile_background);
+       /* toolbar.setLogo(R.drawable.user_profile_background);
         toolbar.setTitle("www.ayyappatelugu.com");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -147,7 +148,10 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
         context = this;
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()

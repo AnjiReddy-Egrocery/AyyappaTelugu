@@ -19,6 +19,7 @@ import com.dst.ayyapatelugu.Model.ForgotDataResponse;
 import com.dst.ayyapatelugu.Model.ResetPasswordResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -115,7 +116,10 @@ public class CreatePasswordActivity extends AppCompatActivity {
     private void validationMethod(String registerId, String otp, String newPassword) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()

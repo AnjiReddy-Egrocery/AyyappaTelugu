@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,7 +61,7 @@ public class AyyappaPetamListAdapteer extends RecyclerView.Adapter<AyyappaPetamL
 
         Picasso.get().load(imgUrl).into(holder.image);
 
-        holder.button.setOnClickListener(new View.OnClickListener() {
+        holder.layoutPetamList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, AyyapaPetamDetailsActivity.class);
@@ -93,15 +94,17 @@ public class AyyappaPetamListAdapteer extends RecyclerView.Adapter<AyyappaPetamL
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle;
         ImageView image;
+        LinearLayout layoutPetamList;
 
-        Button button;
+        //Button button;
 
 
         public MyviewHolder(View itemView) {
             super(itemView);
             tvtitle = (TextView) itemView.findViewById(R.id.txt_name);
             image = (ImageView) itemView.findViewById(R.id.img);
-            button = (Button) itemView.findViewById(R.id.but_details);
+            layoutPetamList = (LinearLayout) itemView.findViewById(R.id.layout_petam_list);
+            //button = (Button) itemView.findViewById(R.id.but_details);
         }
     }
 }

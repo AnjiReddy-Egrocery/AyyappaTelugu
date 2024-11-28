@@ -24,9 +24,9 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.user_profile_background);
+       /* toolbar.setLogo(R.drawable.user_profile_background);
         toolbar.setTitle("  మా గురించి ");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
         setSupportActionBar(toolbar);
         ;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

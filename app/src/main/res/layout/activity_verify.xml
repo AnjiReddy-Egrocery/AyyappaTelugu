@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:background="@drawable/backgroundimage"
+    android:background="@drawable/bg_logo"
     tools:context=".User.LoginActivity">
 
     <RelativeLayout
@@ -15,8 +15,7 @@
         android:layout_marginLeft="30dp"
         android:layout_marginTop="20dp"
         android:layout_marginRight="30dp"
-        android:background="@drawable/design_background"
-        android:backgroundTint="#FFF">
+       >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -44,27 +43,15 @@
             android:padding="20dp"
             android:orientation="vertical">
 
-         <!--   <EditText
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:id="@+id/edt_otp"
-                android:inputType="number"
-                android:hint="Otp Receive in Your Mobile No"
-                android:layout_marginTop="16dp"
-                android:drawablePadding="10dp"
-                android:paddingLeft="10dp"
-                android:textColor="#000"
-                android:textColorHint="#000"
-                android:background="@drawable/editext_border"
-                android:drawableLeft="@drawable/baseline_call_24"/>-->
+
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Thank You, Registered Successfully..."
                 android:gravity="center"
-                android:textColor="#000"
-                android:textSize="16dp"
+                android:textColor="#fff"
+                android:textSize="17dp"
                 android:textStyle="bold"/>
             <Button
                 android:layout_width="match_parent"

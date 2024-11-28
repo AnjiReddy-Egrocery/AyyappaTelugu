@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -24,6 +25,7 @@ import com.dst.ayyapatelugu.Model.CalenderDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
 import com.dst.ayyapatelugu.Services.ApiClient;
+import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 
 import java.time.Year;
 import java.util.List;
@@ -52,6 +54,10 @@ public class CalenderActivity extends AppCompatActivity {
     CalenderAdapter calenderAdapter;
     ImageView imageLeft,imageRight;
 
+    ImageView imageAnadanam,imageNityaPooja;
+    TextView textAndanam,txtNityaPooja;
+
+
     private static final String PREF_NAME = "CalendarPrefs";
     private static final String KEY_CURRENT_YEAR = "currentYear";
     private static final String KEY_PREVIOUS_YEAR = "previousYear";
@@ -64,12 +70,12 @@ public class CalenderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_calender);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.user_profile_background);
+        /*toolbar.setLogo(R.drawable.user_profile_background);*/
         txtYear=findViewById(R.id.txt_calender);
         imageLeft=findViewById(R.id.image_left);
         imageRight=findViewById(R.id.image_right);
-        toolbar.setTitle("www.ayyappatelugu.com");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+        /*toolbar.setTitle("www.ayyappatelugu.com");
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));*/
         setSupportActionBar(toolbar);
         ;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -86,7 +92,42 @@ public class CalenderActivity extends AppCompatActivity {
             }
         });
 
+        imageAnadanam=findViewById(R.id.layout_image_anadanam);
+        imageAnadanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(CalenderActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
 
+        textAndanam = findViewById(R.id.layout_txt_anadanam);
+        textAndanam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(CalenderActivity.this,AnadanamActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        txtNityaPooja = findViewById(R.id.txt_nitya_pooja);
+        txtNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent=new Intent(CalenderActivity.this, NityaPoojaActivity.class);
+                startActivity(intent);
+
+            }
+        });
+        imageNityaPooja = findViewById(R.id.img_nitya_pooja);
+        imageNityaPooja.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(CalenderActivity.this,NityaPoojaActivity.class);
+                startActivity(intent);
+            }
+        });
 
         imageRight.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,7 +169,10 @@ public class CalenderActivity extends AppCompatActivity {
     private void VerifyMethod(String calender) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         OkHttpClient client = new OkHttpClient.Builder()
+                .sslSocketFactory(UnsafeTrustManager.createTrustAllSslSocketFactory(), UnsafeTrustManager.createTrustAllTrustManager())
+                .hostnameVerifier((hostname, session) -> true) // Bypasses hostname verification
                 .addInterceptor(loggingInterceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()

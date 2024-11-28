@@ -86,6 +86,13 @@
     <group android:id="@+id/group12"
         >
         <item
+            android:id="@+id/ayyappa_policy"
+            android:icon="@drawable/baseline_fiber_manual_record_24"
+            android:title="@string/tayyappa_policy"/>
+    </group>
+    <group android:id="@+id/group13"
+        >
+        <item
             android:id="@+id/log_out"
             android:icon="@drawable/baseline_fiber_manual_record_24"
             android:title="లాగ్అవుట్"/>
