@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_list"
+    android:orientation="vertical"
+    android:background="#FFF"
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    card_view:strokeColor="#9E9494"
+    card_view:strokeWidth="1dp"
+    card_view:cardUseCompatPadding="true"
+    card_view:cardElevation="5dp"
+    card_view:cardCornerRadius="8dp">
+
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFF"
+        android:padding="12dp"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/info_window_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:textSize="16dp"
+            android:text="Info Window Title" />
+        <TextView
+            android:id="@+id/info_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:layout_marginTop="12dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:textSize="16dp"
+            android:text="Location Details" />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Navigation"
+            android:id="@+id/start_navigation_button"
+            android:padding="8dp"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:backgroundTint="#E41010" />
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
