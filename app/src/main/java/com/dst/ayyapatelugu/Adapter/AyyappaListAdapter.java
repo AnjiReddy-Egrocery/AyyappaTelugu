@@ -46,11 +46,11 @@ public class AyyappaListAdapter extends RecyclerView.Adapter<AyyappaListAdapter.
         String imageUrl = "https://www.ayyappatelugu.com/assets/temple_images/" + profilepic;
         String name = templesListModel.getTempleName();
 
-        if (name.length() > 20) { // Arbitrary length, adjust based on design
-            holder.tvTempleName.setTextSize(16); // Reduce font size for long names
-            holder.tvTempleName.setText(name.substring(0, 16) + "..."); // Add ellipsis
+        if (name.length() > 40) { // Arbitrary length, adjust based on design
+            holder.tvTempleName.setTextSize(14); // Reduce font size for long names
+            holder.tvTempleName.setText(name.substring(0, 40) + "..."); // Add ellipsis
         } else {
-            holder.tvTempleName.setTextSize(16); // Regular font size
+            holder.tvTempleName.setTextSize(14); // Regular font size
             holder.tvTempleName.setText(name);
         }
 

@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -53,6 +54,7 @@ public class LoginActivity extends AppCompatActivity {
 
     GoogleSignInOptions gso;
     GoogleSignInClient gsc;
+    boolean isLoggedIn;
     //LinearLayout linearAuth;
 
 
@@ -111,7 +113,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });*/
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        boolean isLoggedIn = SharedPrefManager.getInstance(getApplicationContext()).isLoggedIn();
+        isLoggedIn = SharedPrefManager.getInstance(getApplicationContext()).isLoggedIn();
         if (account != null || isLoggedIn) {
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             startActivity(intent);
@@ -121,19 +123,22 @@ public class LoginActivity extends AppCompatActivity {
 
     public void ShowHidePass(View view) {
 
-        if(view.getId()==R.id.show_pass_btn){
-            if(edtPassword.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())){
-                ((ImageView)(view)).setImageResource(R.drawable.visiablityoff);
-                //Show Password
-                edtPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-            }
-            else{
-                ((ImageView)(view)).setImageResource(R.drawable.visiablity);
-                //Hide Password
-                edtPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-            }
+        int cursorPosition = edtPassword.getSelectionStart();
+
+        if (edtPassword.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())) {
+            ((ImageView) (view)).setImageResource(R.drawable.visiablityoff);
+            // Show Password
+            edtPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+        } else {
+            ((ImageView) (view)).setImageResource(R.drawable.visiablity);
+            // Hide Password
+            edtPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
         }
+
+        // Restore the cursor position
+        edtPassword.setSelection(cursorPosition);
     }
+
 
     private void LoginMethod(String parentEmail, String password) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
@@ -175,11 +180,19 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this, "Incorrect Email or Password", Toast.LENGTH_LONG).show();
                     } else if (errorCode.equals("200")) {
                         // Successful login, save data and navigate to HomeActivity
+                        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean("isLoggedIn", true); // Save login state
+                        editor.apply();
+
+                        // Save additional user data if needed
                         SharedPrefManager.getInstance(getApplicationContext()).insertData(dataResponse);
                         Toast.makeText(LoginActivity.this, "User Login Successfully", Toast.LENGTH_SHORT).show();
 
+                        // Navigate to HomeActivity
                         Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                         startActivity(intent);
+                        finish(); // Close LoginActivity
                     }
                 } else {
                     // Handle unexpected response (e.g., server error or invalid data)

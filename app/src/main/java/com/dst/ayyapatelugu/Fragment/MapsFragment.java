@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -16,19 +17,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.dst.ayyapatelugu.Activity.AyyaappaDevlyaluActivity;
+import com.dst.ayyapatelugu.Adapter.TemplesAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedManager;
 import com.dst.ayyapatelugu.Model.AyyappaTempleMapDataResponse;
+import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
 import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
@@ -43,6 +50,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -75,6 +83,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     private List<AyyappaTempleMapDataResponse.Result> templeList;
 
+    Button butNearsttemples;
+
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Nullable
@@ -83,6 +93,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         View view = inflater.inflate(R.layout.maps_fragment, container, false);
         zoomInButton = view.findViewById(R.id.zoom_in_button);
         zoomOutButton = view.findViewById(R.id.zoom_out_button);
+
+        butNearsttemples = view.findViewById(R.id.btn_nearest_temple);
 
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -106,6 +118,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 zoomOutMap();
             }
         });
+
+        butNearsttemples.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayNearByTemples();
+
+            }
+        });
         //getContext() = this;
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -124,6 +144,122 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         return view;
 
+    }
+
+    private void displayNearByTemples() {
+        if (userLocation != null && templeList != null) {
+            // List to store temples that are within 10 km
+            List<AyyappaTempleMapDataResponse.Result> nearbyTemples = new ArrayList<>();
+
+            for (AyyappaTempleMapDataResponse.Result temple : templeList) {
+                // Exclude unnamed temples or temples named "ayyappa" (case insensitive)
+                if (temple.getTempleNameTelugu() == null || temple.getTempleNameTelugu().trim().isEmpty() ||
+                        temple.getLocation().equalsIgnoreCase("ayyappa") || temple.getLocation().equalsIgnoreCase("kothur")
+                || temple.getLocation().equalsIgnoreCase("barunagar") || temple.getLocation().equalsIgnoreCase("savithribhai") || temple.getLocation().equalsIgnoreCase("Polla")) {
+                    continue;
+                }
+
+                try {
+                    // Get the temple's latitude and longitude
+                    double templeLatitude = Double.parseDouble(temple.getLatitude());
+                    double templeLongitude = Double.parseDouble(temple.getLongitude());
+
+                    // Calculate the distance between the user's location and the temple
+                    float[] results = new float[1];
+                    Location.distanceBetween(
+                            userLocation.latitude, userLocation.longitude,
+                            templeLatitude, templeLongitude,
+                            results
+                    );
+                    float distanceInMeters = results[0]; // Distance in meters
+
+                    // Check if the temple is within 10 km
+                    if (distanceInMeters <= 10000) {
+                        nearbyTemples.add(temple); // Add temple to the list
+                    }
+                } catch (NumberFormatException e) {
+                    Log.e("Invalid Temple Data", "Invalid latitude/longitude for temple: " + temple.getTempleNameTelugu());
+                    continue; // Skip invalid entries
+                }
+            }
+
+            // Check if there are any nearby temples
+            if (!nearbyTemples.isEmpty()) {
+                showNearbyTemplesDialog(nearbyTemples);
+            } else {
+                Toast.makeText(getContext(), "No temples found within 10 km.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "Location or temple list not available.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showNearbyTemplesDialog(List<AyyappaTempleMapDataResponse.Result> nearbyTemples) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_nearest_temples, null);
+        builder.setView(dialogView);
+
+        RecyclerView recyclerView = dialogView.findViewById(R.id.rv_nearest_temples);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        TemplesAdapter adapter = new TemplesAdapter(nearbyTemples);
+        recyclerView.setAdapter(adapter);
+
+        RadioGroup radioGroup = dialogView.findViewById(R.id.rg_radius);
+        RadioButton rb5km = dialogView.findViewById(R.id.rb_5km);
+        RadioButton rb10km = dialogView.findViewById(R.id.rb_10km);
+        RadioButton rb20km = dialogView.findViewById(R.id.rb_20km);
+
+        // Default selection to 10 km
+        rb10km.setChecked(true);
+
+        // Filter temples based on selected radius
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int selectedRadius = 10000; // Default radius is 10 km
+            if (checkedId == R.id.rb_5km) {
+                selectedRadius = 5000; // 5 km
+            } else if (checkedId == R.id.rb_20km) {
+                selectedRadius = 20000; // 20 km
+            }
+            // Update the temple list and adapter
+            List<AyyappaTempleMapDataResponse.Result> filteredTemples = filterTemplesByRadius(selectedRadius);
+            adapter.updateData(filteredTemples);
+        });
+
+        AlertDialog dialog = builder.create();
+
+        ImageButton closeButton = dialogView.findViewById(R.id.btn_close);
+        closeButton.setOnClickListener(v -> {
+            // Dismiss the dialog when the close button is clicked
+            dialog.dismiss();
+        });
+
+
+        dialog.show();
+    }
+
+    private List<AyyappaTempleMapDataResponse.Result> filterTemplesByRadius(int selectedRadius) {
+        List<AyyappaTempleMapDataResponse.Result> filteredTemples = new ArrayList<>();
+        if (userLocation != null && templeList != null) {
+            for (AyyappaTempleMapDataResponse.Result temple : templeList) {
+                try {
+                    double templeLatitude = Double.parseDouble(temple.getLatitude());
+                    double templeLongitude = Double.parseDouble(temple.getLongitude());
+
+                    float[] results = new float[1];
+                    Location.distanceBetween(
+                            userLocation.latitude, userLocation.longitude,
+                            templeLatitude, templeLongitude,
+                            results
+                    );
+                    if (results[0] <= selectedRadius) {
+                        filteredTemples.add(temple);
+                    }
+                } catch (NumberFormatException e) {
+                    Log.e("Invalid Temple Data", "Invalid latitude/longitude for temple: " + temple.getTempleNameTelugu());
+                }
+            }
+        }
+        return filteredTemples;
     }
 
     @Override

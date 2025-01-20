@@ -41,9 +41,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:layout_marginRight="18dp"
-                            android:layout_marginLeft="18dp"
-                            app:cardCornerRadius="25dp"
+                            android:layout_marginRight="14dp"
+                            android:layout_marginLeft="14dp"
+                            app:cardCornerRadius="15dp"
                             app:cardElevation="5dp"
                             android:layout_gravity="center_horizontal">
                         <ImageView
@@ -59,6 +59,8 @@
                             android:layout_width="match_parent"
                             android:layout_marginTop="12dp"
                             android:layout_marginBottom="30dp"
+                            android:layout_marginRight="14dp"
+                            android:layout_marginLeft="14dp"
                             android:layout_height="match_parent"
                             android:textSize="16dp"
                             android:textColor="#fff"/>

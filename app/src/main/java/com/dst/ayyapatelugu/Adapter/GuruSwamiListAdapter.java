@@ -87,6 +87,12 @@ public class GuruSwamiListAdapter extends RecyclerView.Adapter<GuruSwamiListAdap
 
     }
 
+    public void updateData(List<GuruSwamiModelList> filteredList) {
+        this.listModel.clear();
+        this.listModel.addAll(filteredList);
+        notifyDataSetChanged();
+    }
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle, tvaddress;
         ImageView image;

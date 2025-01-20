@@ -40,7 +40,7 @@
                         android:layout_marginRight="18dp"
                         android:layout_marginTop="14dp"
                         card_view:cardElevation="5dp"
-                        card_view:cardCornerRadius="25dp">
+                        card_view:cardCornerRadius="15dp">
                     <ImageView
                         android:id="@+id/img"
                         android:layout_width="match_parent"

@@ -9,11 +9,12 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
+        android:background="#BC0F0F">
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
             android:background="#BC0F0F">
             <include
                 layout="@layout/headr_toolbar"
@@ -28,7 +29,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@drawable/bg_logo"
-        android:layout_marginTop="60dp">
+        android:layout_marginTop="67dp">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -55,7 +56,7 @@
                 android:layout_marginRight="18dp"
                 android:layout_marginBottom="10dp"
                 card_view:cardElevation="5dp"
-                card_view:cardCornerRadius="25dp">
+                card_view:cardCornerRadius="15dp">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -182,9 +183,11 @@
             android:weightSum="5"
             android:gravity="center"
             android:layout_weight="1">
+
+
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="70dp"
+                android:layout_height="60dp"
                 android:layout_weight="1"
                 android:id="@+id/layout_image_anadanam"
                 android:layout_marginLeft="-20dp"
@@ -194,11 +197,11 @@
                 android:layout_height="wrap_content"
                 android:text="అన్నదానం"
                 android:layout_weight="1"
-                android:id="@+id/layout_txt_anadanam"
                 android:textColor="#E41B1B"
+                android:id="@+id/layout_txt_anadanam"
                 android:gravity="center"
                 android:layout_marginLeft="-20dp"
-                android:textSize="20dp"
+                android:textSize="16dp"
                 android:textStyle="bold"/>
 
             <ImageView
@@ -214,15 +217,15 @@
                 android:text="నిత్య పూజ"
                 android:layout_weight="1"
                 android:textColor="#E41B1B"
+                android:textSize="16dp"
                 android:id="@+id/txt_nitya_pooja"
-                android:textSize="20dp"
                 android:layout_marginRight="-18dp"
                 android:layout_marginLeft="-20dp"
                 android:textStyle="bold"/>
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="80dp"
+                android:layout_height="70dp"
                 android:layout_weight="1"
                 android:id="@+id/img_nitya_pooja"
                 android:layout_marginTop="18dp"

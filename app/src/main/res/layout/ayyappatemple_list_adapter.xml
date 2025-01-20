@@ -5,24 +5,22 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:layout_width="150dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:id="@+id/layout_temples"
         android:orientation="vertical">
         <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_marginTop="14dp"
-            android:layout_marginRight="12dp"
-            android:layout_marginLeft="12dp"
             android:layout_marginBottom="12dp"
             card_view:cardElevation="5dp"
-            card_view:cardCornerRadius="25dp"
+            card_view:cardCornerRadius="15dp"
             android:layout_gravity="center_horizontal">
             <ImageView
                 android:id="@+id/templeImage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:adjustViewBounds="true"
                 android:scaleType="center"
                 android:layout_gravity="center_horizontal"
@@ -37,10 +35,11 @@
             android:text="HiHello How r u fine "
             android:textColor="#FFF"
             android:textStyle="bold"
+            android:lines="2"
             android:layout_marginLeft="12dp"
-            android:gravity="center_horizontal"
-            android:textSize="16dp" />
+            android:textSize="14dp" />
     </LinearLayout>
+
 
 
 

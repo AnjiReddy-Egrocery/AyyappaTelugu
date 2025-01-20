@@ -5,6 +5,7 @@ import static com.dst.ayyapatelugu.Services.UnsafeTrustManager.createTrustAllTru
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -64,6 +65,7 @@ public class GuruSwamiListActivity extends AppCompatActivity {
     private Retrofit retrofit;
     ImageView imageAnadanam,imageNityaPooja;
     TextView textAndanam,txtNityaPooja;
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
@@ -132,9 +134,12 @@ public class GuruSwamiListActivity extends AppCompatActivity {
         sharedPreferencesHelper= new SharedPreferencesHelper(this);
 
         recyclerView = findViewById(R.id.recycler_guruswami_list);
+
         guruswamiList=new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+
+
 
         List<GuruSwamiModelList> cachedList = sharedPreferencesHelper.getGuruSwamiList();
         if (cachedList != null && !cachedList.isEmpty()) {
@@ -151,6 +156,8 @@ public class GuruSwamiListActivity extends AppCompatActivity {
 
 
     }
+
+
 
     private void updateRecyclerView() {
         guruSwamiListAdapter = new GuruSwamiListAdapter(GuruSwamiListActivity.this, guruswamiList);

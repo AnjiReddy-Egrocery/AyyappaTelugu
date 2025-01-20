@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,14 +46,17 @@ import com.dst.ayyapatelugu.Activity.DevlyaluActivity;
 import com.dst.ayyapatelugu.Activity.GuruSwamiListActivity;
 import com.dst.ayyapatelugu.Activity.NityaPoojaActivity;
 import com.dst.ayyapatelugu.Activity.ProductsListActivity;
+import com.dst.ayyapatelugu.Activity.SevaDetailsActivity;
 import com.dst.ayyapatelugu.Activity.ViewAllAyyappaTemplesActivity;
 import com.dst.ayyapatelugu.Activity.ViewAllDetailsActivity;
+import com.dst.ayyapatelugu.Activity.ViewAllNewsDetailsActivity;
 import com.dst.ayyapatelugu.Activity.ViewAllNewsListActivity;
 import com.dst.ayyapatelugu.Activity.ViewAllTemplesActivity;
 import com.dst.ayyapatelugu.Adapter.AyyappaListAdapter;
 import com.dst.ayyapatelugu.Adapter.AyyappaTemplesListAdapter;
 import com.dst.ayyapatelugu.Adapter.NewsListAdapter;
 import com.dst.ayyapatelugu.Adapter.SevaListAdapter;
+import com.dst.ayyapatelugu.Adapter.ViewAllListAdapter;
 import com.dst.ayyapatelugu.Adapter.ViewAllNewsListAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedPrefManager;
 import com.dst.ayyapatelugu.DataBase.SharedPreferencesHelper;
@@ -67,6 +71,7 @@ import com.dst.ayyapatelugu.Model.SevaListModel;
 import com.dst.ayyapatelugu.Model.TemplesList;
 import com.dst.ayyapatelugu.Model.TemplesListModel;
 import com.dst.ayyapatelugu.Services.APiInterface;
+import com.dst.ayyapatelugu.Services.ImageLoader;
 import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.dst.ayyapatelugu.User.LoginActivity;
 import com.dst.ayyapatelugu.User.PrivacyPolicyActivity;
@@ -108,13 +113,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     LinearLayout layoutSeva;
     Button buttonViewAll;
+    List<SevaListModel> sevaList;
+    private Retrofit retrofit;
 
     Button butAllNews;
-    RecyclerView recyclerviewnews;
+    // RecyclerView recyclerviewnews;
 
     List<NewsListModel> newsList;
+    LinearLayout layoutNews;
+    private boolean isActivityOpened = false;
 
     NewsListAdapter viewNewsListAdapter;
+
 
 
 
@@ -142,9 +152,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private ImageView leftIcon, rightIcon,leftIconAyyappa, rightIconAyyappa,leftnews,rightnews;
 
     Button butViewAll,viewallButton;
-
-
-
 
 
     @Override
@@ -327,13 +334,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private void newsMethod() {
         butAllNews = findViewById(R.id.viewall_but_news);
-        recyclerviewnews = findViewById(R.id.recycler_news);
+        layoutNews = findViewById(R.id.layout_news);
         newsList = new ArrayList<>();
-
-        LinearLayoutManager layoutManager =new LinearLayoutManager(this);
-        recyclerviewnews.setLayoutManager(layoutManager);
-
-        //fechedDatafromShredPreferences();
         butAllNews.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -342,10 +344,26 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        newsfechedDatafromShredPreferences();
+        layoutNews.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!isActivityOpened) {
+                    isActivityOpened = true;
+                    // Open the desired activity
+                    newsfetchDataFromDataBase();
+
+                    // Optionally reset after some time or when the target activity is closed
+                    new Handler().postDelayed(() -> isActivityOpened = false, 1000);
+                }
+                //Toast.makeText(HomeActivity.this, "News Details will be Clicked", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
     }
 
-    private void newsfechedDatafromShredPreferences() {
+  /*  private void newsfechedDatafromShredPreferences() {
         List<NewsListModel> newsListModels= SharedPreferencesManager.getNewsList(HomeActivity.this);
         if (newsListModels != null && !newsListModels.isEmpty()) {
             // Data exists in SharedPreferences, update RecyclerView
@@ -354,7 +372,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             // Data doesn't exist in SharedPreferences, fetch from the network
             newsfetchDataFromDataBase();
         }
-    }
+    }*/
 
     private void newsfetchDataFromDataBase() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
@@ -375,29 +393,43 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         call.enqueue(new Callback<NewsList>() {
             @Override
             public void onResponse(Call<NewsList> call, Response<NewsList> response) {
-                NewsList newsList1=response.body();
-                newsList = new ArrayList<>(Arrays.asList(newsList1.getResult()));
+                if (response.isSuccessful() && response.body() != null) {
+                    NewsList newsList1 = response.body();
+                    newsList = new ArrayList<>(Arrays.asList(newsList1.getResult()));
 
-                SharedPreferencesManager.saveNewsList(HomeActivity.this, newsList);
+                    if (!newsList.isEmpty()) {
+                        NewsListModel newsListModel = newsList.get(0);
 
-                newsupdateRecyclerView(newsList);
+                        String profilepic = newsListModel.getImage();
+                        String imageUrl = "https://www.ayyappatelugu.com/assets/news_images/" + profilepic;
+                        String name = newsListModel.getNewsTitle();
+
+                        Intent intent = new Intent(HomeActivity.this, ViewAllNewsDetailsActivity.class);
+                        intent.putExtra("Name", name);
+                        intent.putExtra("imagePath", imageUrl);
+                        intent.putExtra("position", 0); // Passing position
+                        startActivity(intent);
+                    } else {
+                        Log.e("NewsFetch", "No news items available");
+                    }
+                } else {
+                    Log.e("NewsFetch", "Response error: " + response.code());
+                }
             }
+
+
 
             @Override
             public void onFailure(Call<NewsList> call, Throwable t) {
-                newsList = SharedPreferencesManager.getNewsList(HomeActivity.this);
+              /*  newsList = SharedPreferencesManager.getNewsList(HomeActivity.this);
                 if (newsList != null && !newsList.isEmpty()) {
                     Log.d("Data Check", "NewsList size: " + newsList.size());
-                    newsupdateRecyclerView(newsList);
-                }
+                    //newsupdateRecyclerView(newsList);
+                }*/
 
             }
         });
-    }
 
-    private void newsupdateRecyclerView(List<NewsListModel> newsListModels) {
-        viewNewsListAdapter = new NewsListAdapter(HomeActivity.this,newsListModels);
-        recyclerviewnews.setAdapter(viewNewsListAdapter);
     }
 
     private void AyyaTemplesListMethod() {
@@ -503,12 +535,17 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void ayyappaupdateRecyclerView(List<AyyaTempleListModel> templesListModels) {
-        ayyappaListAdapter = new AyyappaListAdapter(HomeActivity.this,templesListModels);
+        List<AyyaTempleListModel> limitedList = templesListModels.size() > 10
+                ? templesListModels.subList(0, 10)
+                : templesListModels;
+
+        ayyappaListAdapter = new AyyappaListAdapter(HomeActivity.this,limitedList);
         recyclerviewAyyappaTemples.setAdapter(ayyappaListAdapter);
     }
 
     private void TemplesListMethod() {
         recyclerviewTemples = findViewById(R.id.recycler_temples);
+
         butViewAll = findViewById(R.id.but_viewAll);
         butViewAll.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -609,32 +646,97 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private void updateRecyclerView(List<TemplesListModel> templesListModels) {
 
-        ayyappaTemplesListAdapter = new AyyappaTemplesListAdapter(HomeActivity.this,templesListModels);
-        recyclerviewTemples.setAdapter(ayyappaTemplesListAdapter);
+        List<TemplesListModel> limitedList = templesListModels.size() > 10
+                ? templesListModels.subList(0, 10)
+                : templesListModels;
 
+        // Set up the adapter with the limited list
+        ayyappaTemplesListAdapter = new AyyappaTemplesListAdapter(HomeActivity.this, limitedList);
+        recyclerviewTemples.setAdapter(ayyappaTemplesListAdapter);
     }
 
 
 
     private void sevaMethod() {
         buttonViewAll = findViewById(R.id.but_view_all);
-        layoutSeva = findViewById(R.id.layout_seva_grid);
+        layoutSeva = findViewById(R.id.layout_seva);
         buttonViewAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent=new Intent(HomeActivity.this, ViewAllDetailsActivity.class);
                 startActivity(intent);
+
             }
         });
 
         layoutSeva.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(HomeActivity.this, ViewAllDetailsActivity.class);
-                startActivity(intent);
+                if (!isActivityOpened) {
+                    isActivityOpened = true;
+                    // Open the desired activity
+                    SevaDtailsMethod();
+
+                    // Optionally reset after some time or when the target activity is closed
+                    new Handler().postDelayed(() -> isActivityOpened = false, 1000);
+                }
+
             }
         });
 
+    }
+
+    private void SevaDtailsMethod() {
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Change to Level.BASIC for less detail
+
+        // Create OkHttpClient without SSL bypassing
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor) // Add the logging interceptor
+                .build();
+
+        // Initialize Retrofit with the OkHttpClient
+        retrofit = new Retrofit.Builder()
+                .baseUrl("https://www.ayyappatelugu.com/") // Ensure this is your correct base URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+        APiInterface apiClient = retrofit.create(APiInterface.class);
+
+        Call<SevaList> call = apiClient.getSevaList();
+        call.enqueue(new Callback<SevaList>() {
+            @Override
+            public void onResponse(Call<SevaList> call, Response<SevaList> response) {
+                if (response.isSuccessful()) {
+                    SevaList data = response.body();
+                    sevaList=new ArrayList<>(Arrays.asList(data.getResult()));
+                    SevaListModel modal = sevaList.get(0);
+                    String profilePic = modal.getImage();
+                    String imgUrl = "https://www.ayyappatelugu.com/assets/seva_samasthalu/" + profilePic;
+                    String name = modal.getTitle();
+                    String smalldiscription= modal.getSmalldescription();
+                    String discription = modal.getDescription();;
+
+                    Intent intent = new Intent(HomeActivity.this, SevaDetailsActivity.class);
+                    intent.putExtra("ItemName", name);
+                    intent.putExtra("SmallDiscription", smalldiscription);
+                    intent.putExtra("imagePath", imgUrl);
+                    intent.putExtra("Discription", discription);
+                    startActivity(intent);
+
+                } else {
+                    // Handle unsuccessful response
+                    // You might want to show an error message or handle it in some way
+                    Log.e("API Response", "Unsuccessful: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SevaList> call, Throwable t) {
+                // Handle failure, for example, show an error message
+                Log.e("API Failure", "Error: " + t.getMessage());
+            }
+        });
     }
 
     private void checkAndRequestPermissions() {
@@ -696,11 +798,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent a = new Intent(Intent.ACTION_MAIN);
-                        a.addCategory(Intent.CATEGORY_HOME);
-                        a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(a);
-                        finish(); // Finish the current activity
+                        moveTaskToBack(true);
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {

@@ -26,8 +26,8 @@
                 android:textSize="20dp"
                 android:textStyle="bold"
                 android:gravity="center"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="12dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
                 android:textColor="#fff"/>
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -37,7 +37,7 @@
                 android:layout_marginLeft="18dp"
                 android:layout_marginBottom="10dp"
                 android:layout_marginTop="14dp"
-                card_view:cardCornerRadius="25dp">
+                card_view:cardCornerRadius="15dp">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -52,8 +52,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginLeft="12dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
                 android:weightSum="3"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -88,8 +88,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginLeft="12dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
                 android:weightSum="3"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -123,8 +123,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginLeft="12dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
                 android:weightSum="3"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -159,8 +159,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginLeft="14dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
                 android:weightSum="3"
                 android:orientation="horizontal">
 
@@ -194,8 +194,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginLeft="12dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
                 android:weightSum="3"
                 android:orientation="horizontal">
 
@@ -233,6 +233,8 @@
                 android:text=""
                 android:textColor="#fff"
                 android:textSize="16dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
                 android:autoLink="web"
                 android:id="@+id/txt_discription"
                 android:gravity="center"/>

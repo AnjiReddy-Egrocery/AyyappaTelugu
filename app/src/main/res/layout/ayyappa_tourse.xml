@@ -23,8 +23,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginRight="12dp"
-            android:layout_marginLeft="12dp">
+            android:layout_marginRight="14dp"
+            android:layout_marginLeft="14dp">
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
                 android:layout_marginRight="18dp"
                 android:layout_marginBottom="10dp"
                 card_view:cardElevation="5dp"
-                card_view:cardCornerRadius="25dp">
+                card_view:cardCornerRadius="15dp">
             <ImageView android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/img"
@@ -158,14 +158,16 @@
             android:textSize="20dp"
             android:textStyle="bold"
             android:layout_marginTop="14dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="14dp"
             android:gravity="center"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="14dp"
             android:layout_marginBottom="50dp"
             android:background="@drawable/enquiry_background"
             android:layout_marginTop="12dp">

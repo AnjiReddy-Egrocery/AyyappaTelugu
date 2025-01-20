@@ -5,16 +5,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_logo"
     tools:context=".HomeActivity">
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
+        android:background="#BC0F0F">
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="#BC0F0F">
+            android:layout_height="wrap_content"
+            android:background="#BC0F0F"
+            >
             <include
                 layout="@layout/headr_toolbar"
                 android:layout_width="match_parent"
@@ -29,7 +31,7 @@
         layout="@layout/ayyappa_tourse"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="60dp"/>
+        android:layout_marginTop="67dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,12 +47,14 @@
             android:weightSum="5"
             android:gravity="center"
             android:layout_weight="1">
+
+
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="70dp"
+                android:layout_height="60dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="-20dp"
                 android:id="@+id/layout_image_anadanam"
+                android:layout_marginLeft="-20dp"
                 android:src="@drawable/location"/>
             <TextView
                 android:layout_width="0dp"
@@ -61,7 +65,7 @@
                 android:id="@+id/layout_txt_anadanam"
                 android:gravity="center"
                 android:layout_marginLeft="-20dp"
-                android:textSize="20dp"
+                android:textSize="16dp"
                 android:textStyle="bold"/>
 
             <ImageView
@@ -77,7 +81,7 @@
                 android:text="నిత్య పూజ"
                 android:layout_weight="1"
                 android:textColor="#E41B1B"
-                android:textSize="20dp"
+                android:textSize="16dp"
                 android:id="@+id/txt_nitya_pooja"
                 android:layout_marginRight="-18dp"
                 android:layout_marginLeft="-20dp"
@@ -85,10 +89,10 @@
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="80dp"
+                android:layout_height="70dp"
                 android:layout_weight="1"
-                android:layout_marginTop="18dp"
                 android:id="@+id/img_nitya_pooja"
+                android:layout_marginTop="18dp"
                 android:layout_marginBottom="18dp"
                 android:layout_marginLeft="10dp"
                 android:src="@drawable/nithyapooja"/>
