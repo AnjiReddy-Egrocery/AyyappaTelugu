@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import com.dst.ayyapatelugu.Activity.ViewAllNewsDetailsActivity;
 import com.dst.ayyapatelugu.Activity.ViewAllNewsListActivity;
 import com.dst.ayyapatelugu.Activity.ViewAllTemplesActivity;
 import com.dst.ayyapatelugu.Activity.ViewTempleListDetailsActivity;
+import com.dst.ayyapatelugu.Model.BooksModelResult;
 import com.dst.ayyapatelugu.Model.NewsListModel;
 import com.dst.ayyapatelugu.Model.TemplesListModel;
 import com.dst.ayyapatelugu.R;
@@ -30,10 +32,12 @@ import java.util.List;
 public class ViewAllNewsListAdapter extends RecyclerView.Adapter<ViewAllNewsListAdapter.MyviewHolder> {
     Context mContext;
     List<NewsListModel> listModels;
+    private List<NewsListModel> bookListFull; // Full list for search
 
     public ViewAllNewsListAdapter(ViewAllNewsListActivity viewAllNewsListActivity, List<NewsListModel> newsListModels) {
         this.mContext=viewAllNewsListActivity;
         this.listModels=newsListModels;
+        this.bookListFull = new ArrayList<>(listModels); // Copy full list
     }
 
 
@@ -86,6 +90,10 @@ public class ViewAllNewsListAdapter extends RecyclerView.Adapter<ViewAllNewsList
 
     }
 
+    public Filter getFilter() {
+        return newsFilter;
+    }
+
 
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvNewsName;
@@ -105,4 +113,35 @@ public class ViewAllNewsListAdapter extends RecyclerView.Adapter<ViewAllNewsList
 
         }
     }
+
+    private final Filter newsFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<NewsListModel> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(bookListFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (NewsListModel item : bookListFull) {
+                    if (item.getNewsTitle().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            results.count = filteredList.size();
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            listModels.clear();
+            listModels.addAll((List) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

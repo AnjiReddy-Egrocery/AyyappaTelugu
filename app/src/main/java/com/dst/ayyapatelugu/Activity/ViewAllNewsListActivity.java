@@ -2,14 +2,17 @@ package com.dst.ayyapatelugu.Activity;
 
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,6 +51,9 @@ public class ViewAllNewsListActivity extends AppCompatActivity {
 
     ImageView imageAnadanam,imageNityaPooja;
     TextView textAndanam,txtNityaPooja;
+
+    SearchView searchView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,6 +123,42 @@ public class ViewAllNewsListActivity extends AppCompatActivity {
         recyclerviewnews.setLayoutManager(layoutManager);
 
         fechedDatafromShredPreferences();
+
+        searchView = findViewById(R.id.searchView);
+        searchView.setQueryHint("Search by NewsTitle");
+        searchView.setIconifiedByDefault(false); // Keep it expanded
+        searchView.setFocusable(true);
+        searchView.setFocusableInTouchMode(true);
+        searchView.setClickable(true);
+
+        EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchEditText.setHint("Search by NewsTitle");
+        searchEditText.setHintTextColor(Color.GRAY); // Change hint color if needed
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false); // Open search input on click
+            }
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                if (viewAllNewsListAdapter != null) {
+                    viewAllNewsListAdapter.getFilter().filter(query);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (viewAllNewsListAdapter != null) {
+                    viewAllNewsListAdapter.getFilter().filter(newText);
+                }
+                return false;
+            }
+        });
     }
     private void fechedDatafromShredPreferences() {
         List<NewsListModel> newsListModels= SharedPreferencesManager.getNewsList(ViewAllNewsListActivity.this);

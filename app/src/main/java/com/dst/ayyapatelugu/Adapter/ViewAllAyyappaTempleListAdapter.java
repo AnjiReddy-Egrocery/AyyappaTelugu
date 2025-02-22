@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,18 +17,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dst.ayyapatelugu.Activity.ViewAllAyyappaTemplesActivity;
 import com.dst.ayyapatelugu.Activity.ViewTempleListDetailsActivity;
 import com.dst.ayyapatelugu.Model.AyyaTempleListModel;
+import com.dst.ayyapatelugu.Model.BooksModelResult;
+import com.dst.ayyapatelugu.Model.ProductListModel;
 import com.dst.ayyapatelugu.Model.TemplesListModel;
 import com.dst.ayyapatelugu.R;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ViewAllAyyappaTempleListAdapter extends RecyclerView.Adapter<ViewAllAyyappaTempleListAdapter.MyviewHolder> {
     Context mContext;
     List<AyyaTempleListModel> listModels;
+    private List<AyyaTempleListModel> bookListFull; // Full list for search
     public ViewAllAyyappaTempleListAdapter(Context context, List<AyyaTempleListModel> templesListModels) {
         this.mContext= context;
-        this.listModels=templesListModels;
+        this.listModels = new ArrayList<>(templesListModels); // Ensure listModels is modifiable
+        this.bookListFull = new ArrayList<>();
+        this.bookListFull.addAll(templesListModels); // Creates a separate modifiable list
     }
 
     @NonNull
@@ -78,6 +85,11 @@ public class ViewAllAyyappaTempleListAdapter extends RecyclerView.Adapter<ViewAl
 
     }
 
+    public Filter getFilter() {
+        return templeFilter;
+    }
+
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvTempleName;
         ImageView imgTemple;
@@ -93,4 +105,35 @@ public class ViewAllAyyappaTempleListAdapter extends RecyclerView.Adapter<ViewAl
             //butViewAll = itemView.findViewById(R.id.but_mostpopular);
         }
     }
+
+    private final Filter templeFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<AyyaTempleListModel> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(bookListFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (AyyaTempleListModel item : bookListFull) {
+                    if (item.getTempleName().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            results.count = filteredList.size();
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            listModels.clear();
+            listModels = new ArrayList<>((List<AyyaTempleListModel>) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

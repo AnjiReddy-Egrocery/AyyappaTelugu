@@ -16,14 +16,41 @@
         android:layout_marginBottom="80dp"
         android:orientation="vertical">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:gravity="center"
+            android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="అయ్యప్ప పుస్తకాలు"
             android:textSize="20dp"
             android:textStyle="bold"
             android:textColor="#fff"/>
+
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="50dp"
+                android:src="@drawable/nearby"
+                android:layout_gravity="right"/>
+        </LinearLayout>
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:iconifiedByDefault="false"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:clickable="true"
+            android:queryHint="Search by BookName"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:textColorHint="#000"
+            android:background="@drawable/searchview_bg"/>
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"

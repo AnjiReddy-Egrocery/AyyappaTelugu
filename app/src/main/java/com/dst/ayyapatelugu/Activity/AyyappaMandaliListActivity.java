@@ -2,6 +2,7 @@ package com.dst.ayyapatelugu.Activity;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,30 +12,37 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 
 import com.dst.ayyapatelugu.Adapter.AyyapamandaliAdapter;
+import com.dst.ayyapatelugu.Adapter.GuruSwamiListAdapter;
 import com.dst.ayyapatelugu.HomeActivity;
 import com.dst.ayyapatelugu.Model.BajanaManadaliListModel;
 import com.dst.ayyapatelugu.Model.BajanaMandaliList;
+import com.dst.ayyapatelugu.Model.GuruSwamiModelList;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
 import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.ibm.icu.text.Transliterator;
 
 
 import java.lang.reflect.Type;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -47,10 +55,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class AyyappaMandaliListActivity extends AppCompatActivity {
     Toolbar toolbar;
 
-    List<BajanaManadaliListModel> bajanaManadaliList;
+    List<BajanaManadaliListModel> bajanaManadaliList, filteredList;
 
     RecyclerView recyclerView;
     AyyapamandaliAdapter ayyapamandaliAdapter;
+
+    SearchView searchView;
     private Retrofit retrofit;
 
     ImageView imageAnadanam,imageNityaPooja;
@@ -122,9 +132,27 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
             }
         });
 
+        searchView = findViewById(R.id.searchView);
+        searchView.setQueryHint("Search by name, city, or mobile number");
+        searchView.setIconifiedByDefault(false); // Keep it expanded
+        searchView.setFocusable(true);
+        searchView.setFocusableInTouchMode(true);
+        searchView.setClickable(true);
+
+        EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchEditText.setHint("Search by name, city, or mobile number");
+        searchEditText.setHintTextColor(Color.GRAY); // Change hint color if needed
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false); // Open search input on click
+            }
+        });
 
         recyclerView = findViewById(R.id.recycler_manadali);
         bajanaManadaliList=new ArrayList<>();
+        filteredList = new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -135,9 +163,30 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
         if (cachedData != null && !cachedData.isEmpty()) {
             // Use cached data
             bajanaManadaliList = parseCachedData(cachedData);
-            ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, bajanaManadaliList);
-            recyclerView.setAdapter(ayyapamandaliAdapter);
-        }  HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+            filteredList = parseCachedData(cachedData);
+
+            if (ayyapamandaliAdapter == null) {
+                ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
+                recyclerView.setAdapter(ayyapamandaliAdapter);
+            } else {
+                ayyapamandaliAdapter.updateList(filteredList);
+            }
+        }
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterResults(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterResults(newText);
+                return false;
+            }
+        });
+
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Change to Level.BASIC for less detail
 
         // Create OkHttpClient without SSL bypassing
@@ -168,8 +217,13 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
 
                     // Update your UI with the received data
                     bajanaManadaliList = data != null ? Arrays.asList(data.getResult()) : new ArrayList<>();
-                    ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, bajanaManadaliList);
-                    recyclerView.setAdapter(ayyapamandaliAdapter);
+                    if (ayyapamandaliAdapter == null) {
+                        ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
+                        recyclerView.setAdapter(ayyapamandaliAdapter);
+                    } else {
+                        ayyapamandaliAdapter.updateList(filteredList);
+                    }
+
                 } else {
                     // Handle unsuccessful response
                     // You might want to show an error message or handle it in some way
@@ -185,6 +239,69 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
         });
     }
 
+    private void filterResults(String query) {
+        filteredList.clear();
+
+        if (query == null || query.trim().isEmpty()) {
+            filteredList.addAll(bajanaManadaliList);
+            if (ayyapamandaliAdapter == null) {
+                ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
+                recyclerView.setAdapter(ayyapamandaliAdapter);
+            } else {
+                ayyapamandaliAdapter.updateList(filteredList);
+            }
+            return;
+        }
+
+        String normalizedQuery = normalize(query);
+
+        // **Auto Transliterate Based on Input Language**
+        String teluguQuery = transliterateToTelugu(normalizedQuery);
+        String englishQuery = transliterateToEnglish(normalizedQuery);
+
+        for (BajanaManadaliListModel item : bajanaManadaliList) {
+            String normalizedName = normalize(item.getBajanamandaliName());
+            String normalizedCity = normalize(item.getBajanamandaliCity());
+            String normalizedMobile = normalize(item.getBajanamandaliMobile());
+
+            if (normalizedName.contains(normalizedQuery) ||
+                    normalizedCity.contains(normalizedQuery) ||
+                    normalizedMobile.contains(normalizedQuery) ||
+                    normalizedName.contains(teluguQuery) ||
+                    normalizedCity.contains(teluguQuery) ||
+                    normalizedName.contains(englishQuery) ||
+                    normalizedCity.contains(englishQuery)) {
+
+                filteredList.add(item);
+            }
+        }
+        if (ayyapamandaliAdapter == null) {
+            ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
+            recyclerView.setAdapter(ayyapamandaliAdapter);
+        } else {
+            ayyapamandaliAdapter.updateList(filteredList);
+        }
+
+    }
+
+    private String normalize(String input) {
+        return Normalizer.normalize(input, Normalizer.Form.NFKC)
+                .toLowerCase(Locale.getDefault());
+    }
+
+    private String transliterateToTelugu(String input) {
+        Transliterator transliterator = Transliterator.getInstance("Latin-Telugu");
+        return transliterator.transliterate(input);
+    }
+
+    private String transliterateToEnglish(String input) {
+        Transliterator transliterator = Transliterator.getInstance("Telugu-Latin");
+        return transliterator.transliterate(input);
+    }
+
+
+
+
 
     private void saveDataToSharedPreferences(BajanaMandaliList data) {
         // Save the data to SharedPreferences
@@ -199,6 +316,7 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
         // Use Gson to parse the JSON string back to your data model
         Gson gson = new Gson();
         Type listType = new TypeToken<List<BajanaManadaliListModel>>() {}.getType();
+
         return gson.fromJson(cachedData, listType);
     }
 }

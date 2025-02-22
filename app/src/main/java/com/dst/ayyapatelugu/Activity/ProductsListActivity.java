@@ -1,6 +1,7 @@
 package com.dst.ayyapatelugu.Activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -8,10 +9,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -56,6 +59,8 @@ public class ProductsListActivity extends AppCompatActivity {
     SharedPreferencesHelper sharedPreferencesHelper;
 
     private Retrofit retrofit;
+
+    SearchView searchView;
 
     ImageView imageAnadanam,imageNityaPooja;
     TextView textAndanam,txtNityaPooja;
@@ -181,6 +186,43 @@ public class ProductsListActivity extends AppCompatActivity {
             public void onFailure(Call<ProductList> call, Throwable t) {
                 // Handle failure, for example, show an error message
                 Log.e("API Failure", "Error: " + t.getMessage());
+            }
+        });
+
+
+        searchView = findViewById(R.id.searchView);
+        searchView.setQueryHint("Search by Title");
+        searchView.setIconifiedByDefault(false); // Keep it expanded
+        searchView.setFocusable(true);
+        searchView.setFocusableInTouchMode(true);
+        searchView.setClickable(true);
+
+        EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchEditText.setHint("Search by Title");
+        searchEditText.setHintTextColor(Color.GRAY); // Change hint color if needed
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false); // Open search input on click
+            }
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                if (productListAdapter != null) {
+                    productListAdapter.getFilter().filter(query);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (productListAdapter != null) {
+                    productListAdapter.getFilter().filter(newText);
+                }
+                return false;
             }
         });
     }

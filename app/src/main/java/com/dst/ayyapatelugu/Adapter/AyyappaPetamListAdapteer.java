@@ -91,6 +91,11 @@ public class AyyappaPetamListAdapteer extends RecyclerView.Adapter<AyyappaPetamL
 
     }
 
+    public void updateList(List<decoratormodelResult> filteredList) {
+        decoratorList = filteredList;
+        notifyDataSetChanged();
+    }
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle;
         ImageView image;

@@ -1,10 +1,16 @@
 package com.dst.ayyapatelugu.Adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.text.format.DateFormat;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -37,51 +43,109 @@ public class CalenderAdapter extends RecyclerView.Adapter<CalenderAdapter.MyView
 
     @Override
     public void onBindViewHolder(@NonNull CalenderAdapter.MyViewHolder holder, int position) {
-      CalenderDataResponse.Result.Poojas poojasList=poojas.get(position);
-
-      String month=poojasList.getMonthName();
-      long openDateTime=Long.parseLong(poojasList.getOpeningDate());
-      String poojaName= poojasList.getPoojaName();
-      long closedDateTime=Long.parseLong(poojasList.getClosingDate());
-
-        String formattedOpenDate="";
-        String formattedClosedDate="";
-
-        if (openDateTime != 0){
-            Date openDate=new Date(openDateTime * 1000);
-            SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MM-yyyy",Locale.getDefault());
-            formattedOpenDate=dateFormat.format(openDate);
-        }
-
-        if (closedDateTime != 0){
-            Date closedDate=new Date(closedDateTime * 1000);
-            SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MM-yyyy",Locale.getDefault());
-            formattedClosedDate=dateFormat.format(closedDate);
-        }
-      holder.txtYear.setText(month);
-      holder.txtOpeningDate.setText(formattedOpenDate);
-      holder.txtPoojaName.setText(poojaName);
-      holder.txtClosingDate.setText(formattedClosedDate);
-
+        holder.bindData(poojas);
     }
+
     @Override
     public int getItemCount() {
-        return poojas.size();
+        return 1; // Table should be displayed only once
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView txtYear;
-        TextView txtOpeningDate;
-        TextView txtPoojaName;
-        TextView txtClosingDate;
+        TableLayout tableLayout;
+
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
+            tableLayout = itemView.findViewById(R.id.table_layout);
+        }
+      @SuppressLint("ResourceAsColor")
+        public void bindData(List<CalenderDataResponse.Result.Poojas> poojaList) {
+            tableLayout.removeAllViews(); // Clear previous rows
 
-            txtYear=itemView.findViewById(R.id.txt_month);
-            txtOpeningDate=itemView.findViewById(R.id.txt_open_date);
-            txtPoojaName=itemView.findViewById(R.id.txt_pooja_name);
-            txtClosingDate=itemView.findViewById(R.id.txt_close_date);
+            // *Add Header Row*
+            TableRow headerRow = new TableRow(mContext);
+            headerRow.setBackgroundResource(R.drawable.header_bg); // Header background
+            headerRow.setPadding(8, 8, 8, 8);
 
+            headerRow.addView(createHeaderTextView("Month", 180));
+            headerRow.addView(createHeaderTextView("Opening Date", 150));
+            headerRow.addView(createHeaderTextView("Closing Date", 150));
+            headerRow.addView(createHeaderTextView("Pooja Name", 300));
+
+            tableLayout.addView(headerRow);
+
+            // *Add Data Rows*
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+
+            for (int i = 0; i < poojaList.size(); i++) {
+                CalenderDataResponse.Result.Poojas pooja = poojaList.get(i);
+                String formattedOpenDate = "--", formattedCloseDate = "--";
+
+                if (pooja.getOpeningDate() != null && !pooja.getOpeningDate().isEmpty()) {
+                    formattedOpenDate = dateFormat.format(new Date(Long.parseLong(pooja.getOpeningDate()) * 1000));
+                }
+                if (pooja.getClosingDate() != null && !pooja.getClosingDate().isEmpty()) {
+                    formattedCloseDate = dateFormat.format(new Date(Long.parseLong(pooja.getClosingDate()) * 1000));
+                }
+
+                TableRow dataRow = new TableRow(mContext);
+                dataRow.setPadding(8, 8, 8, 8);
+
+                // *Make Every Alternate Row Light Transparent*
+                if (i % 2 == 0) {
+                    dataRow.setBackgroundColor(mContext.getResources().getColor(R.color.row_light_transparent)); // Light transparent color
+                } else {
+                    dataRow.setBackgroundColor(android.R.color.transparent); // No color
+                }
+
+                dataRow.addView(createMultiLineTextView(pooja.getMonthName(), 180));
+                dataRow.addView(createTextView(formattedOpenDate, 150));
+                dataRow.addView(createTextView(formattedCloseDate, 150));
+                dataRow.addView(createMultiLineTextView(pooja.getPoojaName(), 300));
+
+                tableLayout.addView(dataRow);
+            }
+        }
+
+
+
+        private TextView createTextView(String text, int width) {
+            TextView textView = new TextView(mContext);
+            textView.setText(text);
+            textView.setTextColor(mContext.getResources().getColor(R.color.white)); // White text color
+            textView.setTextSize(16);
+            textView.setGravity(Gravity.CENTER);
+            textView.setPadding(8, 8, 8, 8);
+            textView.setMaxLines(1);
+            textView.setEllipsize(null);
+            textView.setWidth(width);
+            return textView;
+        }
+
+        private TextView createMultiLineTextView(String text, int width) {
+            TextView textView = new TextView(mContext);
+            textView.setText(text);
+            textView.setTextColor(mContext.getResources().getColor(R.color.white)); // White text color
+            textView.setTextSize(16);
+            textView.setGravity(Gravity.CENTER);
+            textView.setPadding(8, 8, 8, 8);
+            textView.setMaxLines(3); // Allow maximum 3 lines
+            textView.setEllipsize(null);
+            textView.setWidth(width);
+            return textView;
+        }
+
+        private TextView createHeaderTextView(String text, int width) {
+            TextView textView = new TextView(mContext);
+            textView.setText(text);
+            textView.setTextColor(mContext.getResources().getColor(R.color.white)); // White text color
+            textView.setTextSize(18);
+            textView.setGravity(Gravity.CENTER);
+            textView.setPadding(8, 8, 8, 8);
+            textView.setTypeface(null, android.graphics.Typeface.BOLD);
+            textView.setBackgroundResource(R.drawable.header_bg); // Apply same header background
+            textView.setWidth(width);
+            return textView;
         }
     }
 }

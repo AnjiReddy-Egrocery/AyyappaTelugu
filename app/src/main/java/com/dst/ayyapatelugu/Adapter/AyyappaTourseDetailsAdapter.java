@@ -80,6 +80,11 @@ public class AyyappaTourseDetailsAdapter extends RecyclerView.Adapter<AyyappaTou
 
     }
 
+    public void updateList(List<YatraListModel> filteredList) {
+        listModel = filteredList;
+        notifyDataSetChanged();
+    }
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle, tvaddress, tvdetails, tvamount;
         ImageView image;

@@ -2,6 +2,7 @@ package com.dst.ayyapatelugu.Activity;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,28 +12,35 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dst.ayyapatelugu.Adapter.AyyappaTourseDetailsAdapter;
 
+import com.dst.ayyapatelugu.Adapter.GuruSwamiListAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedPreferencesManager;
 import com.dst.ayyapatelugu.HomeActivity;
+import com.dst.ayyapatelugu.Model.GuruSwamiModelList;
 import com.dst.ayyapatelugu.Model.YatraList;
 import com.dst.ayyapatelugu.Model.YatraListModel;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
 import com.google.gson.Gson;
+import com.ibm.icu.text.Transliterator;
 
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -46,11 +54,13 @@ public class AyyappaTourseDetailsACtivity extends AppCompatActivity {
 
     Toolbar toolbar;
 
-    List<YatraListModel> yatraListModels;
+    List<YatraListModel> yatraListModels, filteredList;
 
     RecyclerView recyclerView;
 
     AyyappaTourseDetailsAdapter ayyappaTourseDetailsAdapter;
+
+    SearchView searchView;
 
     ImageView imageAnadanam,imageNityaPooja;
     TextView textAndanam,txtNityaPooja;
@@ -118,19 +128,109 @@ public class AyyappaTourseDetailsACtivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        searchView = findViewById(R.id.searchView);
+        searchView.setQueryHint("Search by Name");
+        searchView.setIconifiedByDefault(false); // Keep it expanded
+        searchView.setFocusable(true);
+        searchView.setFocusableInTouchMode(true);
+        searchView.setClickable(true);
 
+        EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchEditText.setHint("Search by Name");
+        searchEditText.setHintTextColor(Color.GRAY); // Change hint color if needed
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false); // Open search input on click
+            }
+        });
 
         recyclerView = findViewById(R.id.frecycler_tourse_list);
         yatraListModels=new ArrayList<>();
+        filteredList = new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         YatraList savedYatraList = SharedPreferencesManager.getYatraList(this);
         if (savedYatraList != null) {
             yatraListModels = new ArrayList<>(Arrays.asList(savedYatraList.getResult()));
-            ayyappaTourseDetailsAdapter = new AyyappaTourseDetailsAdapter(AyyappaTourseDetailsACtivity.this, yatraListModels);
-            recyclerView.setAdapter(ayyappaTourseDetailsAdapter);
+            if (ayyappaTourseDetailsAdapter == null) {
+                ayyappaTourseDetailsAdapter = new AyyappaTourseDetailsAdapter(AyyappaTourseDetailsACtivity.this, filteredList);
+                recyclerView.setAdapter(ayyappaTourseDetailsAdapter);
+            } else {
+                ayyappaTourseDetailsAdapter.updateList(filteredList);
+            }
+
         }
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterResults(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterResults(newText);
+                return false;
+            }
+        });
         fetchDataFromApi();
+    }
+
+    private void filterResults(String query) {
+        filteredList.clear();
+
+        if (query == null || query.trim().isEmpty()) {
+            filteredList.addAll(yatraListModels);
+            if (ayyappaTourseDetailsAdapter == null) {
+                ayyappaTourseDetailsAdapter = new AyyappaTourseDetailsAdapter(AyyappaTourseDetailsACtivity.this, filteredList);
+                recyclerView.setAdapter(ayyappaTourseDetailsAdapter);
+            } else {
+                ayyappaTourseDetailsAdapter.updateList(filteredList);
+            }
+            return;
+        }
+
+        String normalizedQuery = normalize(query);
+
+        // **Auto Transliterate Based on Input Language**
+        String teluguQuery = transliterateToTelugu(normalizedQuery);
+        String englishQuery = transliterateToEnglish(normalizedQuery);
+
+        for (YatraListModel item : yatraListModels) {
+            String normalizedName = normalize(item.getNameOfPlace());
+
+            if (normalizedName.contains(normalizedQuery) ||
+
+                    normalizedName.contains(teluguQuery) ||
+
+                    normalizedName.contains(englishQuery)) {
+
+                filteredList.add(item);
+            }
+        }
+
+        if (ayyappaTourseDetailsAdapter == null) {
+            ayyappaTourseDetailsAdapter = new AyyappaTourseDetailsAdapter(AyyappaTourseDetailsACtivity.this, filteredList);
+            recyclerView.setAdapter(ayyappaTourseDetailsAdapter);
+        } else {
+            ayyappaTourseDetailsAdapter.updateList(filteredList);
+        }
+    }
+
+    private String normalize(String input) {
+        return Normalizer.normalize(input, Normalizer.Form.NFKC)
+                .toLowerCase(Locale.getDefault());
+    }
+    private String transliterateToTelugu(String input) {
+        Transliterator transliterator = Transliterator.getInstance("Latin-Telugu");
+        return transliterator.transliterate(input);
+    }
+
+    private String transliterateToEnglish(String input) {
+        Transliterator transliterator = Transliterator.getInstance("Telugu-Latin");
+        return transliterator.transliterate(input);
     }
 
     private void fetchDataFromApi() {

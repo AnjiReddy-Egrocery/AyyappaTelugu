@@ -1,12 +1,15 @@
 package com.dst.ayyapatelugu.Fragment;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,7 +40,7 @@ public class TemplesFragment extends Fragment {
     List<TemplesListModel> templeList;
 
     ViewAllTempleListAdapter viewAllTempleListAdapter;
-
+    private SearchView searchView;
 
     private Retrofit retrofit;
 
@@ -53,6 +56,42 @@ public class TemplesFragment extends Fragment {
         recyclerviewTemples.setLayoutManager(layoutManager);
 
         fechedDatafromShredPreferences();
+
+        searchView = view.findViewById(R.id.searchView);
+        searchView.setQueryHint("Search by Name");
+        searchView.setIconifiedByDefault(false); // Keep it expanded
+        searchView.setFocusable(true);
+        searchView.setFocusableInTouchMode(true);
+        searchView.setClickable(true);
+
+        EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchEditText.setHint("Search by Name");
+        searchEditText.setHintTextColor(Color.GRAY); // Change hint color if needed
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false); // Open search input on click
+            }
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                if (viewAllTempleListAdapter != null) {
+                    viewAllTempleListAdapter.getFilter().filter(query);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (viewAllTempleListAdapter != null) {
+                    viewAllTempleListAdapter.getFilter().filter(newText);
+                }
+                return false;
+            }
+        });
 
         return view;
     }

@@ -2,6 +2,7 @@ package com.dst.ayyapatelugu.Activity;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,29 +12,36 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dst.ayyapatelugu.Adapter.AyyappaBooksListAdapter;
 
+import com.dst.ayyapatelugu.Adapter.GuruSwamiListAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedPreferencesManager;
 import com.dst.ayyapatelugu.HomeActivity;
 import com.dst.ayyapatelugu.Model.BooksListModel;
 import com.dst.ayyapatelugu.Model.BooksModelResult;
 
+import com.dst.ayyapatelugu.Model.GuruSwamiModelList;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
 import com.dst.ayyapatelugu.Services.UnsafeTrustManager;
+import com.ibm.icu.text.Transliterator;
 
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -50,6 +58,8 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
     List<BooksModelResult> bookList;
 
     RecyclerView recyclerView;
+
+    SearchView searchView;
 
 
     AyyappaBooksListAdapter ayyappaBooksListAdapter;
@@ -83,7 +93,7 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
             }
         });
         recyclerView = findViewById(R.id.recycler_books);
-        bookList = new ArrayList<>();  // Initialize bookList
+        bookList = new ArrayList<>();
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
@@ -124,10 +134,47 @@ public class AyyapaBooksListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
         fetchDataFromSharedPreferences();
+
+        searchView = findViewById(R.id.searchView);
+        searchView.setQueryHint("Search by BookName");
+        searchView.setIconifiedByDefault(false); // Keep it expanded
+        searchView.setFocusable(true);
+        searchView.setFocusableInTouchMode(true);
+        searchView.setClickable(true);
+
+        EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchEditText.setHint("Search by BookName");
+        searchEditText.setHintTextColor(Color.GRAY); // Change hint color if needed
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false); // Open search input on click
+            }
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                if (ayyappaBooksListAdapter != null) {
+                    ayyappaBooksListAdapter.getFilter().filter(query);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (ayyappaBooksListAdapter != null) {
+                    ayyappaBooksListAdapter.getFilter().filter(newText);
+                }
+                return false;
+            }
+        });
     }
+
+
+
 
     private void fetchDataFromSharedPreferences() {
         List<BooksModelResult> storedBookList = SharedPreferencesManager.getBookList(AyyapaBooksListActivity.this);

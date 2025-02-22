@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,19 +17,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dst.ayyapatelugu.Activity.ProductDetailsActivity;
 import com.dst.ayyapatelugu.Activity.SevaDetailsActivity;
 import com.dst.ayyapatelugu.Activity.ViewAllDetailsActivity;
+import com.dst.ayyapatelugu.Model.BooksModelResult;
 import com.dst.ayyapatelugu.Model.SevaListModel;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.ImageLoader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ViewAllListAdapter extends RecyclerView.Adapter<ViewAllListAdapter.MyviewHolder> {
     Context mContext;
     List<SevaListModel> listModels;
+    private List<SevaListModel> bookListFull;
     public ViewAllListAdapter(ViewAllDetailsActivity viewAllDetailsActivity, List<SevaListModel> sevaList) {
 
         this.mContext=viewAllDetailsActivity;
-        this.listModels=sevaList;
+        this.listModels = new ArrayList<>(sevaList); // Ensure listModels is modifiable
+        this.bookListFull = new ArrayList<>();
+        this.bookListFull.addAll(sevaList); // Creates a separate modifiable list
 
     }
 
@@ -83,6 +89,10 @@ public class ViewAllListAdapter extends RecyclerView.Adapter<ViewAllListAdapter.
 
     }
 
+    public Filter getFilter() {
+        return sevaFilter;
+    }
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle;
         ImageView image;
@@ -102,4 +112,35 @@ public class ViewAllListAdapter extends RecyclerView.Adapter<ViewAllListAdapter.
 
         }
     }
+
+    private final Filter sevaFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<SevaListModel> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(bookListFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (SevaListModel item : bookListFull) {
+                    if (item.getTitle().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            results.count = filteredList.size();
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+              listModels.clear();
+            listModels = new ArrayList<>((List<SevaListModel>) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

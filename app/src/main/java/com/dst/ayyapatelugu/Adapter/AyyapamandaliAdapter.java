@@ -41,8 +41,6 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
         this.listModels = list;
 
     }
-
-
     @Override
     public AyyapamandaliAdapter.MyviewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.ayyapamandali_list_adapter, parent, false);
@@ -106,6 +104,11 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
     public void updateData(List<BajanaManadaliListModel> newList) {
         this.listModels = newList;
         notifyDataSetChanged(); // Notify RecyclerView to refresh the list
+    }
+
+    public void updateList(List<BajanaManadaliListModel> filteredList) {
+        listModels = filteredList;
+        notifyDataSetChanged();
     }
 
     public class MyviewHolder extends RecyclerView.ViewHolder {

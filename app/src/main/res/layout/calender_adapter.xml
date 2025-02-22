@@ -4,113 +4,75 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+
     xmlns:card_view="http://schemas.android.com/apk/res-auto">
-    <LinearLayout
+
+
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginLeft="18dp"
-        android:layout_marginRight="18dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginBottom="10dp"
+        android:fillViewport="true"
         tools:ignore="MissingConstraints">
 
-            <LinearLayout
+        <TableLayout
+
+            android:id="@+id/table_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*"
+            android:background="@drawable/layout_card_background"
+            tools:ignore="MissingConstraints">
+
+            <!-- Table Headers (Only once) -->
+            <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="14dp"
-                android:background="@drawable/layout_card_background"
-                android:gravity="center_vertical"
-                android:orientation="vertical">
+                android:background="#000000">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text="MonthName : "
-                        android:textStyle="bold"
-                        android:textSize="20dp" />
-                    <TextView
-                        android:id="@+id/txt_month"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text=""
-                        android:textSize="18dp" />
-                </LinearLayout>
+                    android:text="Month"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="#FFF"
+                    android:padding="8dp"
+                    android:gravity="center" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text="Opening Date : "
-                        android:textStyle="bold"
-                        android:textSize="20dp" />
-                    <TextView
-                        android:id="@+id/txt_open_date"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text=""
-                        android:textSize="18dp" />
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text="Closed Date : "
-                        android:textStyle="bold"
-                        android:textSize="20dp" />
-                    <TextView
-                        android:id="@+id/txt_close_date"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text=""
-                        android:textSize="18dp" />
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text="Pooja Name : "
-                        android:textStyle="bold"
-                        android:textSize="20dp" />
-                    <TextView
-                        android:id="@+id/txt_pooja_name"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:textColor="#FFF"
-                        android:text=""
-                        android:textSize="18dp" />
-                </LinearLayout>
+                    android:text="Opening Date"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="#FFF"
+                    android:padding="8dp"
+                    android:gravity="center" />
 
-            </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Closing Date"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="#FFF"
+                    android:padding="8dp"
+                    android:gravity="center" />
 
-    </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pooja Name"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="#FFF"
+                    android:padding="8dp"
+                    android:gravity="center" />
+            </TableRow>
+
+            <!-- Data rows will be added dynamically -->
+        </TableLayout>
+
+    </HorizontalScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

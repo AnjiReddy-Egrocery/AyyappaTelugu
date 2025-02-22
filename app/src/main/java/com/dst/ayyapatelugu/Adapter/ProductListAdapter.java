@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,18 +20,23 @@ import com.dst.ayyapatelugu.Activity.ProductDetailsActivity;
 import com.dst.ayyapatelugu.Activity.ProductsListActivity;
 import com.dst.ayyapatelugu.Model.BajanaManadaliListModel;
 import com.dst.ayyapatelugu.Model.ProductListModel;
+import com.dst.ayyapatelugu.Model.SevaListModel;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.ImageLoader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.MyviewHolder> {
     Context mContext;
     List<ProductListModel> listModels;
+    private List<ProductListModel> bookListFull;
 
     public ProductListAdapter(ProductsListActivity productsListActivity, List<ProductListModel> productList) {
         this.mContext = productsListActivity;
-        this.listModels = productList;
+        this.listModels = new ArrayList<>(productList); // Ensure listModels is modifiable
+        this.bookListFull = new ArrayList<>();
+        this.bookListFull.addAll(productList); // Creates a separate modifiable list
     }
 
 
@@ -87,6 +93,10 @@ public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.
 
     }
 
+    public Filter getFilter() {
+        return productFilter;
+    }
+
     public void updateData(List<ProductListModel> newList) {
         this.listModels = newList;
         notifyDataSetChanged(); // Notify RecyclerView to refresh the list
@@ -109,4 +119,35 @@ public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.
             //button = (Button) itemView.findViewById(R.id.but_mostpopular);
         }
     }
+
+    private final Filter productFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<ProductListModel> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(bookListFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (ProductListModel item : bookListFull) {
+                    if (item.getName().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            results.count = filteredList.size();
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            listModels.clear();
+            listModels = new ArrayList<>((List<ProductListModel>) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

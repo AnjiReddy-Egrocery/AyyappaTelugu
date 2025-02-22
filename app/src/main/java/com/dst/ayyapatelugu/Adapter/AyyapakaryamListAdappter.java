@@ -71,6 +71,11 @@ public class AyyapakaryamListAdappter extends RecyclerView.Adapter<AyyapakaryamL
 
     }
 
+    public void updateList(List<KaryakaramamListModel> filteredList) {
+        listModels = filteredList;
+        notifyDataSetChanged();
+    }
+
     public class MyviewHolder extends RecyclerView.ViewHolder {
         TextView tvtitle, tvdetails;
         ImageView image;

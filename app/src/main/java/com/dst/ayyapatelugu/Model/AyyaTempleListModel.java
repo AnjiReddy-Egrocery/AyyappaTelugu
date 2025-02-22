@@ -8,17 +8,22 @@ public class AyyaTempleListModel {
     private String location;
     private String image;
 
+    private String latitude;
+    private String longitude;
+
     public AyyaTempleListModel() {
 
     }
 
-    public AyyaTempleListModel(String templeName, String templeNameTelugu, String openingTime, String closingTime, String location, String image) {
+    public AyyaTempleListModel(String templeName, String templeNameTelugu, String openingTime, String closingTime, String location, String image, String latitude, String longitude) {
         this.templeName = templeName;
         this.templeNameTelugu = templeNameTelugu;
         this.openingTime = openingTime;
         this.closingTime = closingTime;
         this.location = location;
         this.image = image;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getTempleName() {
@@ -67,5 +72,21 @@ public class AyyaTempleListModel {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
     }
 }

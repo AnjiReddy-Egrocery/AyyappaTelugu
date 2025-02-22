@@ -87,9 +87,9 @@ public class GuruSwamiListAdapter extends RecyclerView.Adapter<GuruSwamiListAdap
 
     }
 
-    public void updateData(List<GuruSwamiModelList> filteredList) {
-        this.listModel.clear();
-        this.listModel.addAll(filteredList);
+
+    public void updateList(List<GuruSwamiModelList> filteredList) {
+        listModel = filteredList;
         notifyDataSetChanged();
     }
 
