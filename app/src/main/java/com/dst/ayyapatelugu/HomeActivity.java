@@ -153,6 +153,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     Button butViewAll,viewallButton;
 
+    String Hi;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
