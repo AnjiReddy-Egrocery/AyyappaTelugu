@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -64,7 +65,7 @@ public class TemplesAdapter extends RecyclerView.Adapter<TemplesAdapter.TempleVi
     static class TempleViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView, locationTextView;
 
-        ImageView imageView;
+        LinearLayout imageView;
 
         public TempleViewHolder(@NonNull View itemView) {
             super(itemView);

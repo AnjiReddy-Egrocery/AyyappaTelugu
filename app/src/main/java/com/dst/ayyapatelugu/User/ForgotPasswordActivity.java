@@ -32,6 +32,7 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.Credentials;
 import com.google.android.gms.auth.api.credentials.CredentialsApi;
+import com.google.android.gms.auth.api.credentials.CredentialsClient;
 import com.google.android.gms.auth.api.credentials.HintRequest;
 
 import java.util.List;
@@ -70,18 +71,22 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         edtMobileNumber.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                CredentialsClient credentialsClient = Credentials.getClient(ForgotPasswordActivity.this);
+
                 HintRequest hintRequest = new HintRequest.Builder()
-                        .setPhoneNumberIdentifierSupported(true)
+                        .setPhoneNumberIdentifierSupported(true) // Allow phone number hints
                         .build();
 
+                try {
+                    // Directly retrieve the PendingIntent and use it
+                    PendingIntent pendingIntent = credentialsClient.getHintPickerIntent(hintRequest);
 
-                PendingIntent intent = Credentials.getClient(getApplicationContext()).getHintPickerIntent(hintRequest);
-                try
-                {
-                    startIntentSenderForResult(intent.getIntentSender(), CREDENTIAL_PICKER_REQUEST, null, 0, 0, 0,new Bundle());
-                }
-                catch (IntentSender.SendIntentException e)
-                {
+                    startIntentSenderForResult(
+                            pendingIntent.getIntentSender(),
+                            CREDENTIAL_PICKER_REQUEST,
+                            null, 0, 0, 0, null
+                    );
+                } catch (IntentSender.SendIntentException e) {
                     e.printStackTrace();
                 }
 

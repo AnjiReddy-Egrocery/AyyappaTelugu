@@ -35,6 +35,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -324,7 +325,7 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
             txtLocation.setText(marker.getSnippet());
 
             // Handle the "Start Navigation" button click
-            ImageView startNavigationButton = mContentsView.findViewById(R.id.start_navigation);
+            LinearLayout startNavigationButton = mContentsView.findViewById(R.id.start_navigation);
             startNavigationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

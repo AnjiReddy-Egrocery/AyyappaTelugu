@@ -184,9 +184,10 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
                 .setPhoneNumberIdentifierSupported(true) // Allow phone number hints
                 .build();
 
-        PendingIntent pendingIntent = credentialsClient.getHintPickerIntent(hintRequest);
-
         try {
+            // Directly retrieve the PendingIntent and use it
+            PendingIntent pendingIntent = credentialsClient.getHintPickerIntent(hintRequest);
+
             startIntentSenderForResult(
                     pendingIntent.getIntentSender(),
                     CREDENTIAL_PICKER_REQUEST,
