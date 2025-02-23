@@ -1,6 +1,8 @@
 package com.dst.ayyapatelugu.Activity;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -14,11 +16,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -150,6 +159,8 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
             }
         });
 
+
+
         recyclerView = findViewById(R.id.recycler_manadali);
         bajanaManadaliList=new ArrayList<>();
         filteredList = new ArrayList<>();
@@ -165,13 +176,13 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
             bajanaManadaliList = parseCachedData(cachedData);
             filteredList = parseCachedData(cachedData);
 
-            if (ayyapamandaliAdapter == null) {
-                ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
-                recyclerView.setAdapter(ayyapamandaliAdapter);
-            } else {
-                ayyapamandaliAdapter.updateList(filteredList);
-            }
+            updateRecyclerview();
         }
+
+        if (isNetworkAvailable()) {
+            fetchFreshDataInBackground();
+        }
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -185,6 +196,85 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+    }
+
+    private void fetchFreshDataInBackground() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                fetchMandaliList();
+            }
+        }).start();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
+
+    private void updateRecyclerview() {
+        if (ayyapamandaliAdapter == null) {
+            ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
+            recyclerView.setAdapter(ayyapamandaliAdapter);
+        } else {
+            ayyapamandaliAdapter.updateList(filteredList);
+        }
+    }
+
+    private void filterResults(String query) {
+        filteredList.clear();
+
+        if (query == null || query.trim().isEmpty()) {
+            filteredList.addAll(bajanaManadaliList);
+            updateRecyclerview();
+            return;
+        }
+
+        String normalizedQuery = normalize(query);
+
+        // **Auto Transliterate Based on Input Language**
+        String teluguQuery = transliterateToTelugu(normalizedQuery);
+        String englishQuery = transliterateToEnglish(normalizedQuery);
+
+        for (BajanaManadaliListModel item : bajanaManadaliList) {
+            String normalizedName = normalize(item.getBajanamandaliName());
+            String normalizedCity = normalize(item.getBajanamandaliCity());
+            String normalizedMobile = normalize(item.getBajanamandaliMobile());
+
+            if (normalizedName.contains(normalizedQuery) ||
+                    normalizedCity.contains(normalizedQuery) ||
+                    normalizedMobile.contains(normalizedQuery) ||
+                    normalizedName.contains(teluguQuery) ||
+                    normalizedCity.contains(teluguQuery) ||
+                    normalizedName.contains(englishQuery) ||
+                    normalizedCity.contains(englishQuery)) {
+
+                filteredList.add(item);
+            }
+        }
+        updateRecyclerview();
+
+    }
+
+    private String normalize(String input) {
+        return Normalizer.normalize(input, Normalizer.Form.NFKC)
+                .toLowerCase(Locale.getDefault());
+    }
+
+    private String transliterateToTelugu(String input) {
+        Transliterator transliterator = Transliterator.getInstance("Latin-Telugu");
+        return transliterator.transliterate(input);
+    }
+
+    private String transliterateToEnglish(String input) {
+        Transliterator transliterator = Transliterator.getInstance("Telugu-Latin");
+        return transliterator.transliterate(input);
+    }
+
+    private void fetchMandaliList() {
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Change to Level.BASIC for less detail
@@ -212,17 +302,19 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
                     // Handle successful response
                     BajanaMandaliList data = response.body();
 
+                    bajanaManadaliList.addAll(Arrays.asList(data.getResult()));
+
+
+                    filteredList.clear();
+                    filteredList.addAll(bajanaManadaliList);
+
                     // Save the data to SharedPreferences for future use
                     saveDataToSharedPreferences(data);
 
+
+
                     // Update your UI with the received data
-                    bajanaManadaliList = data != null ? Arrays.asList(data.getResult()) : new ArrayList<>();
-                    if (ayyapamandaliAdapter == null) {
-                        ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
-                        recyclerView.setAdapter(ayyapamandaliAdapter);
-                    } else {
-                        ayyapamandaliAdapter.updateList(filteredList);
-                    }
+                     updateRecyclerview();
 
                 } else {
                     // Handle unsuccessful response
@@ -237,67 +329,9 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
                 Log.e("API Failure", "Error: " + t.getMessage());
             }
         });
-    }
-
-    private void filterResults(String query) {
-        filteredList.clear();
-
-        if (query == null || query.trim().isEmpty()) {
-            filteredList.addAll(bajanaManadaliList);
-            if (ayyapamandaliAdapter == null) {
-                ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
-                recyclerView.setAdapter(ayyapamandaliAdapter);
-            } else {
-                ayyapamandaliAdapter.updateList(filteredList);
-            }
-            return;
-        }
-
-        String normalizedQuery = normalize(query);
-
-        // **Auto Transliterate Based on Input Language**
-        String teluguQuery = transliterateToTelugu(normalizedQuery);
-        String englishQuery = transliterateToEnglish(normalizedQuery);
-
-        for (BajanaManadaliListModel item : bajanaManadaliList) {
-            String normalizedName = normalize(item.getBajanamandaliName());
-            String normalizedCity = normalize(item.getBajanamandaliCity());
-            String normalizedMobile = normalize(item.getBajanamandaliMobile());
-
-            if (normalizedName.contains(normalizedQuery) ||
-                    normalizedCity.contains(normalizedQuery) ||
-                    normalizedMobile.contains(normalizedQuery) ||
-                    normalizedName.contains(teluguQuery) ||
-                    normalizedCity.contains(teluguQuery) ||
-                    normalizedName.contains(englishQuery) ||
-                    normalizedCity.contains(englishQuery)) {
-
-                filteredList.add(item);
-            }
-        }
-        if (ayyapamandaliAdapter == null) {
-            ayyapamandaliAdapter = new AyyapamandaliAdapter(AyyappaMandaliListActivity.this, filteredList);
-            recyclerView.setAdapter(ayyapamandaliAdapter);
-        } else {
-            ayyapamandaliAdapter.updateList(filteredList);
-        }
 
     }
 
-    private String normalize(String input) {
-        return Normalizer.normalize(input, Normalizer.Form.NFKC)
-                .toLowerCase(Locale.getDefault());
-    }
-
-    private String transliterateToTelugu(String input) {
-        Transliterator transliterator = Transliterator.getInstance("Latin-Telugu");
-        return transliterator.transliterate(input);
-    }
-
-    private String transliterateToEnglish(String input) {
-        Transliterator transliterator = Transliterator.getInstance("Telugu-Latin");
-        return transliterator.transliterate(input);
-    }
 
 
 
@@ -318,5 +352,42 @@ public class AyyappaMandaliListActivity extends AppCompatActivity {
         Type listType = new TypeToken<List<BajanaManadaliListModel>>() {}.getType();
 
         return gson.fromJson(cachedData, listType);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.popup_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId(); // Get the clicked menu item ID
+
+        if (id == R.id.popup_info) {
+            informationDialog();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void informationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(AyyappaMandaliListActivity.this);
+        View dialogView = LayoutInflater.from(AyyappaMandaliListActivity.this).inflate(R.layout.dialog_mandali_information, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        ImageButton closeButton = dialogView.findViewById(R.id.btn_close);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 }

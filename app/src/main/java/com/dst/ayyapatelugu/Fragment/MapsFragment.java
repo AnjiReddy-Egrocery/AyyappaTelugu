@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dst.ayyapatelugu.Adapter.TemplesAdapter;
+import com.dst.ayyapatelugu.Adapter.TemplesMapAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedManager;
 import com.dst.ayyapatelugu.Model.AyyappaTempleMapDataResponse;
 import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
@@ -202,6 +204,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         RecyclerView recyclerView = dialogView.findViewById(R.id.rv_nearest_temples);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         TemplesAdapter adapter = new TemplesAdapter(nearbyTemples);
+        adapter.setOnNavigateListener(new TemplesMapAdapter.OnNavigateListener() {
+            @Override
+            public void onNavigate(String latitude, String longitude) {
+                openGoogleMapsNavigation(latitude, longitude);
+            }
+        });
         recyclerView.setAdapter(adapter);
 
         RadioGroup radioGroup = dialogView.findViewById(R.id.rg_radius);
@@ -421,7 +429,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             txtLocation.setText(marker.getSnippet());
 
             // Handle the "Start Navigation" button click
-            Button startNavigationButton = mContentsView.findViewById(R.id.start_navigation);
+            ImageView startNavigationButton = mContentsView.findViewById(R.id.start_navigation);
             startNavigationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -539,6 +547,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         protected void onPostExecute(Void result) {
 
+        }
+    }
+
+    private void openGoogleMapsNavigation(String latitude, String longitude) {
+        String destinationStr = latitude + "," + longitude;
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destinationStr);
+
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+
+        if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            Toast.makeText(requireContext(), "No navigation app installed.", Toast.LENGTH_SHORT).show();
         }
     }
 }

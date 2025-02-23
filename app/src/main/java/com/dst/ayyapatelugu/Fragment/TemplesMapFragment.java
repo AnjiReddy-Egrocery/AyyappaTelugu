@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -33,11 +34,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dst.ayyapatelugu.Activity.DevlyaluActivity;
-import com.dst.ayyapatelugu.Adapter.TemplesAdapter;
 import com.dst.ayyapatelugu.Adapter.TemplesMapAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedPreferenceManager;
-import com.dst.ayyapatelugu.Model.AyyappaTempleMapDataResponse;
 import com.dst.ayyapatelugu.Model.TempleMapDataResponse;
 import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.APiInterface;
@@ -206,6 +204,12 @@ public class TemplesMapFragment extends Fragment implements OnMapReadyCallback {
          RecyclerView recyclerView = dialogView.findViewById(R.id.rv_nearest_temples);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         TemplesMapAdapter adapter = new TemplesMapAdapter(nearbyTemples);
+        adapter.setOnNavigateListener(new TemplesMapAdapter.OnNavigateListener() {
+            @Override
+            public void onNavigate(String latitude, String longitude) {
+                openGoogleMapsNavigation(latitude, longitude);
+            }
+        });
         recyclerView.setAdapter(adapter);
 
         RadioGroup radioGroup = dialogView.findViewById(R.id.rg_radius);
@@ -357,7 +361,7 @@ public class TemplesMapFragment extends Fragment implements OnMapReadyCallback {
             txtLocation.setText(marker.getSnippet());
 
             // Handle the "Start Navigation" button click
-            Button startNavigationButton = mContentsView.findViewById(R.id.start_navigation_button);
+            ImageView startNavigationButton = mContentsView.findViewById(R.id.start_navigation_button);
             startNavigationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -382,6 +386,8 @@ public class TemplesMapFragment extends Fragment implements OnMapReadyCallback {
             Toast.makeText(getContext(), "No navigation app installed. Please install a navigation app.", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
     private String getAddressFromLocation(double latitude, double longitude) {
         Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
@@ -532,6 +538,20 @@ public class TemplesMapFragment extends Fragment implements OnMapReadyCallback {
 
         protected void onPostExecute(Void result) {
 
+        }
+    }
+
+    private void openGoogleMapsNavigation(String latitude, String longitude) {
+        String destinationStr = latitude + "," + longitude;
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destinationStr);
+
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+
+        if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            Toast.makeText(requireContext(), "No navigation app installed.", Toast.LENGTH_SHORT).show();
         }
     }
 }

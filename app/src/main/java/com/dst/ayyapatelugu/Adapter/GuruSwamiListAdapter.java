@@ -25,6 +25,7 @@ import com.dst.ayyapatelugu.Services.ImageLoader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GuruSwamiListAdapter extends RecyclerView.Adapter<GuruSwamiListAdapter.MyviewHolder> {
@@ -59,6 +60,7 @@ public class GuruSwamiListAdapter extends RecyclerView.Adapter<GuruSwamiListAdap
         String cityName = modal.getCityName();
         holder.tvtitle.setText(name);
         holder.tvaddress.setText(cityName);
+        holder.tvmobile.setText(number);
 
         ImageLoader.loadImage(mContext, imgUrl, holder.image);
 
@@ -89,12 +91,12 @@ public class GuruSwamiListAdapter extends RecyclerView.Adapter<GuruSwamiListAdap
 
 
     public void updateList(List<GuruSwamiModelList> filteredList) {
-        listModel = filteredList;
+        this.listModel = new ArrayList<>(filteredList);  // Ensure a fresh copy
         notifyDataSetChanged();
     }
 
     public class MyviewHolder extends RecyclerView.ViewHolder {
-        TextView tvtitle, tvaddress;
+        TextView tvtitle, tvaddress,tvmobile;
         ImageView image;
         LinearLayout layoutGuruSwamiAdapter;
 
@@ -104,6 +106,7 @@ public class GuruSwamiListAdapter extends RecyclerView.Adapter<GuruSwamiListAdap
             super(itemView);
             tvtitle = (TextView) itemView.findViewById(R.id.txt_name);
             tvaddress = (TextView) itemView.findViewById(R.id.txt_address);
+            tvmobile = (TextView) itemView.findViewById(R.id.txt_mobilenum);
             image = (ImageView) itemView.findViewById(R.id.img);
             layoutGuruSwamiAdapter = (LinearLayout) itemView.findViewById(R.id.layout_guruswami_adapter);
             //butMostPopular = (Button) itemView.findViewById(R.id.but_mostpopular);

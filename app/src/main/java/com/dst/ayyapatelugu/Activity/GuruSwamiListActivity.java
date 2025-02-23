@@ -3,7 +3,9 @@ package com.dst.ayyapatelugu.Activity;
 import static com.dst.ayyapatelugu.Services.UnsafeTrustManager.createTrustAllSslSocketFactory;
 import static com.dst.ayyapatelugu.Services.UnsafeTrustManager.createTrustAllTrustManager;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -11,16 +13,29 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,8 +43,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.dst.ayyapatelugu.Adapter.GuruSwamiListAdapter;
 
+import com.dst.ayyapatelugu.Adapter.TemplesAdapter;
 import com.dst.ayyapatelugu.DataBase.SharedPreferencesHelper;
 import com.dst.ayyapatelugu.HomeActivity;
+import com.dst.ayyapatelugu.Model.AyyappaTempleMapDataResponse;
 import com.dst.ayyapatelugu.Model.GuruSwamiList;
 import com.dst.ayyapatelugu.Model.GuruSwamiModelList;
 import com.dst.ayyapatelugu.R;
@@ -48,6 +65,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -76,6 +94,9 @@ public class GuruSwamiListActivity extends AppCompatActivity {
     TextView textAndanam,txtNityaPooja;
 
     private static final Transliterator latinToTelugu = Transliterator.getInstance("Latin-Telugu");
+
+    private ProgressBar progressBar;
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
@@ -162,11 +183,11 @@ public class GuruSwamiListActivity extends AppCompatActivity {
         sharedPreferencesHelper= new SharedPreferencesHelper(this);
 
         recyclerView = findViewById(R.id.recycler_guruswami_list);
-
-        guruswamiList=new ArrayList<>();
+        guruswamiList = new ArrayList<>();
         filteredList = new ArrayList<>();
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
+        guruSwamiListAdapter = new GuruSwamiListAdapter(this, filteredList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(guruSwamiListAdapter);
 
 
 
@@ -179,8 +200,8 @@ public class GuruSwamiListActivity extends AppCompatActivity {
 
         }
 
-        if (cachedList == null || cachedList.isEmpty()) {
-            fetchGuruSwamiList();
+        if (isNetworkAvailable()) {
+            fetchFreshDataInBackground();
         }
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -196,9 +217,21 @@ public class GuruSwamiListActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
 
+    private void fetchFreshDataInBackground() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                fetchGuruSwamiList();
+            }
+        }).start();
+    }
 
-
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
     }
 
     private void filterResults(String query) {
@@ -206,13 +239,12 @@ public class GuruSwamiListActivity extends AppCompatActivity {
 
         if (query == null || query.trim().isEmpty()) {
             filteredList.addAll(guruswamiList);
+            Log.e("FETCH_GURUSWAMI", "Showing all items, size: " + filteredList.size());
             updateRecyclerView();
             return;
         }
 
         String normalizedQuery = normalize(query);
-
-        // **Auto Transliterate Based on Input Language**
         String teluguQuery = transliterateToTelugu(normalizedQuery);
         String englishQuery = transliterateToEnglish(normalizedQuery);
 
@@ -220,6 +252,8 @@ public class GuruSwamiListActivity extends AppCompatActivity {
             String normalizedName = normalize(item.getGuruswamiName());
             String normalizedCity = normalize(item.getCityName());
             String normalizedMobile = normalize(item.getMobileNo());
+
+            Log.d("FILTERING", "Checking: " + normalizedName + ", " + normalizedCity);
 
             if (normalizedName.contains(normalizedQuery) ||
                     normalizedCity.contains(normalizedQuery) ||
@@ -232,7 +266,6 @@ public class GuruSwamiListActivity extends AppCompatActivity {
                 filteredList.add(item);
             }
         }
-
         updateRecyclerView();
     }
 
@@ -243,7 +276,7 @@ public class GuruSwamiListActivity extends AppCompatActivity {
 
 
     private void updateRecyclerView() {
-        if (guruSwamiListAdapter == null) {
+      if (guruSwamiListAdapter == null) {
             guruSwamiListAdapter = new GuruSwamiListAdapter(GuruSwamiListActivity.this, filteredList);
             recyclerView.setAdapter(guruSwamiListAdapter);
         } else {
@@ -283,33 +316,73 @@ public class GuruSwamiListActivity extends AppCompatActivity {
         call.enqueue(new Callback<GuruSwamiList>() {
             @Override
             public void onResponse(Call<GuruSwamiList> call, Response<GuruSwamiList> response) {
-                GuruSwamiList guruSwamiList = response.body();
-                guruswamiList = new ArrayList<>(Arrays.asList(guruSwamiList.getResult()));
+                if (response.isSuccessful() ) {
 
-                // Update the RecyclerView with the latest data
+                    GuruSwamiList guruSwamiList = response.body();
 
-                sharedPreferencesHelper.saveGuruSwamiList(guruswamiList);
-                updateRecyclerView();
-                //sharedPreferencesHelper.saveLastUpdateTime(System.currentTimeMillis());
+
+                    guruswamiList.addAll(Arrays.asList(guruSwamiList.getResult()));
+                    filteredList.clear();
+                    filteredList.addAll(guruswamiList);  // ✅ Update filteredList with fetched data
+
+
+                    // Save to cache
+                    sharedPreferencesHelper.saveGuruSwamiList(guruswamiList);
+
+                    updateRecyclerView(); // Update UI
+                } else {
+
+                }
             }
 
             @Override
             public void onFailure(Call<GuruSwamiList> call, Throwable t) {
-                // Handle the failure scenario if needed
-                // You might want to show an error message to the user
-
+                // Try to load cached data if API fails
                 List<GuruSwamiModelList> cachedList = sharedPreferencesHelper.getGuruSwamiList();
                 if (cachedList != null && !cachedList.isEmpty()) {
-                    // Step 2: Load cached data into the RecyclerView
-                    guruswamiList .addAll(cachedList);
+                    guruswamiList.addAll(cachedList);
                     updateRecyclerView();
-
                 }
-
-
             }
         });
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.popup_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId(); // Get the clicked menu item ID
+
+        if (id == R.id.popup_info) {
+            informationDialog();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void informationDialog() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(GuruSwamiListActivity.this);
+            View dialogView = LayoutInflater.from(GuruSwamiListActivity.this).inflate(R.layout.dialog_guruswami_information, null);
+            builder.setView(dialogView);
+
+            AlertDialog dialog = builder.create();
+
+            ImageButton closeButton = dialogView.findViewById(R.id.btn_close);
+            closeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        }
 
 }

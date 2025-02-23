@@ -13,13 +13,12 @@
         android:background="@drawable/layout_card_background"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:layout_marginTop="12dp">
+        android:layout_marginTop="10dp">
 
 
 
             <LinearLayout android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="12dp"
                 android:id="@+id/layout_seva_all"
                 android:orientation="vertical">
 
@@ -28,8 +27,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="18dp"
                     android:layout_marginRight="18dp"
-                    android:layout_marginTop="14dp"
-                    android:layout_marginBottom="10dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="8dp"
                     card_view:cardElevation="5dp"
                     card_view:cardCornerRadius="25dp">
 
@@ -44,10 +43,10 @@
 
                 <TextView
                     android:id="@+id/txt_name"
-                    android:textSize="22sp"
+                    android:textSize="20sp"
                     android:text="Title"
                     android:textColor="#FFF"
-                    android:layout_marginBottom="15dp"
+                    android:layout_marginBottom="10dp"
                     android:gravity="center_horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"

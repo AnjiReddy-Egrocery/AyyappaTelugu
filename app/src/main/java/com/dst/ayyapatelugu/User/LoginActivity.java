@@ -81,8 +81,8 @@ public class LoginActivity extends AppCompatActivity {
         txtFpwd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intentforgot = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
-                startActivity(intentforgot);
+                /*Intent intentforgot = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+                startActivity(intentforgot);*/
             }
         });
 

@@ -29,6 +29,7 @@ import com.dst.ayyapatelugu.R;
 import com.dst.ayyapatelugu.Services.ImageLoader;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdapter.MyviewHolder> {
@@ -69,6 +70,7 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
         String discription = modal.getBajanamandaliDescription();
         holder.tvtitle.setText(name);
         holder.tvadd.setText(modal.getBajanamandaliLocation());
+        holder.tvMobile.setText(Number);
 
 
         holder.layoutMandaliList.setOnClickListener(new View.OnClickListener() {
@@ -101,18 +103,15 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
 
     }
 
-    public void updateData(List<BajanaManadaliListModel> newList) {
-        this.listModels = newList;
-        notifyDataSetChanged(); // Notify RecyclerView to refresh the list
-    }
+
 
     public void updateList(List<BajanaManadaliListModel> filteredList) {
-        listModels = filteredList;
+        this.listModels = new ArrayList<>(filteredList);  // Ensure a fresh copy
         notifyDataSetChanged();
     }
 
     public class MyviewHolder extends RecyclerView.ViewHolder {
-        TextView tvtitle, tvadd;
+        TextView tvtitle, tvadd,tvMobile;
         ImageView image;
         LinearLayout layoutMandaliList;
 
@@ -122,6 +121,7 @@ public class AyyapamandaliAdapter extends RecyclerView.Adapter<AyyapamandaliAdap
             super(itemView);
             tvtitle = (TextView) itemView.findViewById(R.id.txt_name);
             tvadd = (TextView) itemView.findViewById(R.id.txt_address);
+            tvMobile = (TextView) itemView.findViewById(R.id.txt_mobile);
             image = (ImageView) itemView.findViewById(R.id.img);
             layoutMandaliList=(LinearLayout) itemView.findViewById(R.id.layout_mandali_list);
 

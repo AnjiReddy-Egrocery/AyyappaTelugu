@@ -178,22 +178,19 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     private void startCredentialPicker() {
+        CredentialsClient credentialsClient = Credentials.getClient(this);
+
         HintRequest hintRequest = new HintRequest.Builder()
-                .setPhoneNumberIdentifierSupported(true)
+                .setPhoneNumberIdentifierSupported(true) // Allow phone number hints
                 .build();
 
-        CredentialsClient credentialsClient = Credentials.getClient(this);
         PendingIntent pendingIntent = credentialsClient.getHintPickerIntent(hintRequest);
 
         try {
             startIntentSenderForResult(
                     pendingIntent.getIntentSender(),
                     CREDENTIAL_PICKER_REQUEST,
-                    null,
-                    0,
-                    0,
-                    0,
-                    new Bundle()
+                    null, 0, 0, 0, null
             );
         } catch (IntentSender.SendIntentException e) {
             e.printStackTrace();
@@ -439,36 +436,15 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        /*if (requestCode == RC_SIGN_IN || requestCode == RC_SIGN_UP_WITH_GOOGLE) {
-            GoogleSignInAccount account = handleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
-            if (account != null) {
-                if (requestCode == RC_SIGN_IN) {
-                    // Handle Google Sign-In for Login
-                    handleSignInResult(account);
-                } else if (requestCode == RC_SIGN_UP_WITH_GOOGLE) {
-                    // Handle Google Sign-In for Sign Up
-                    performSignUp(account);
-                }
+        if (requestCode == CREDENTIAL_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Credential credential = data.getParcelableExtra(Credential.EXTRA_KEY);
+                String phoneNumber = credential.getId(); // This is the selected phone number
+                edtNumber.setText(phoneNumber);
             } else {
-                // Handle sign-in/sign-up failure
-                //showToast("Failed to sign in/sign up. Please try again.");
-            }
-        }*/
-
-
-        if (requestCode == CREDENTIAL_PICKER_REQUEST && resultCode == RESULT_OK && data != null) {
-            Credential credential = data.getParcelableExtra(Credential.EXTRA_KEY);
-            if (credential != null) {
-                String selectedPhoneNumber = credential.getId();
-               // EditText editText = findViewById(R.id.edt_mobile_number);
-                if (edtNumber != null) {
-                    edtNumber.setText(selectedPhoneNumber);
-                } else {
-                    Log.e("RegisterActivity", "EditText is null!");
-                }
+                Log.e("HintPicker", "User canceled the phone number selection");
             }
         }
-
     }
 
 

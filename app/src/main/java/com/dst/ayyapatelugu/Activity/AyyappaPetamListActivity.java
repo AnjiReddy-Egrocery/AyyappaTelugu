@@ -1,6 +1,8 @@
 package com.dst.ayyapatelugu.Activity;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -22,8 +24,13 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -135,7 +142,6 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
         searchView = findViewById(R.id.searchView);
         searchView.setQueryHint("Search by name, city, or mobile number");
         searchView.setIconifiedByDefault(false); // Keep it expanded
@@ -266,6 +272,8 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
                     decoratorListModel decorators = response.body();
                     decoratorList = new ArrayList<>(Arrays.asList(decorators.getResult()));
 
+                    filteredList.clear();
+                    filteredList.addAll(decoratorList);
 
                     // Save data to SharedPreferences
                     saveDataToSharedPreferences(decoratorList);
@@ -321,5 +329,42 @@ public class AyyappaPetamListActivity extends AppCompatActivity {
 
         Type type = new TypeToken<List<decoratormodelResult>>() {}.getType();
         return gson.fromJson(json, type);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.popup_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId(); // Get the clicked menu item ID
+
+        if (id == R.id.popup_info) {
+            informationDialog();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void informationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(AyyappaPetamListActivity.this);
+        View dialogView = LayoutInflater.from(AyyappaPetamListActivity.this).inflate(R.layout.dialog_petam_information, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        ImageButton closeButton = dialogView.findViewById(R.id.btn_close);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 }

@@ -27,28 +27,28 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="14dp"
-            android:layout_marginRight="18dp"
-            android:layout_marginLeft="18dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="16dp"
             card_view:cardElevation="5dp"
             card_view:cardCornerRadius="10dp">
 
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/img"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            />
+            <ImageView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/img"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:layout_gravity="center"
+                android:contentDescription="@string/app_name"/>
         </androidx.cardview.widget.CardView>
         <TextView
             android:id="@+id/txt"
-            android:textSize="22sp"
+            android:textSize="20dp"
             android:text="Title"
-            android:layout_marginTop="14dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             android:layout_below="@+id/img"
             android:textColor="#FFF"
             android:gravity="center_horizontal"
@@ -61,28 +61,14 @@
             android:textSize="16dp"
             android:text="Title"
             android:gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="10dp"
             android:layout_below="@+id/txt"
             android:textColor="#FFF"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textStyle="normal"/>
 
-        <!--<Button
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="0dp"
-            android:text=" మరింత సమాచారం "
-            android:layout_below="@+id/txt_details"
-            android:id="@+id/but_more_details"
-            android:textColor="#FFF"
-            android:textSize="18dp"
-            android:backgroundTint="#AC9F85"
-            android:textStyle="normal"/>-->
-
     </LinearLayout>
-
-
     </LinearLayout>
 </LinearLayout>
 

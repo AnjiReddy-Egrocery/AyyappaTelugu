@@ -19,7 +19,8 @@
                 layout="@layout/headr_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                />
+                android:layout_gravity="center"/>
+
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 

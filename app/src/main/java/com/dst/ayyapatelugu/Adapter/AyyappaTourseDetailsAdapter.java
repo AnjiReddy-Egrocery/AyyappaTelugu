@@ -20,6 +20,7 @@ import com.dst.ayyapatelugu.Model.YatraListModel;
 import com.dst.ayyapatelugu.R;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AyyappaTourseDetailsAdapter extends RecyclerView.Adapter<AyyappaTourseDetailsAdapter.MyviewHolder> {
@@ -81,7 +82,7 @@ public class AyyappaTourseDetailsAdapter extends RecyclerView.Adapter<AyyappaTou
     }
 
     public void updateList(List<YatraListModel> filteredList) {
-        listModel = filteredList;
+        this.listModel = new ArrayList<>(filteredList);
         notifyDataSetChanged();
     }
 

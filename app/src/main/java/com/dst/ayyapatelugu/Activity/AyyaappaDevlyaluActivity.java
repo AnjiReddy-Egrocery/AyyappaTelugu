@@ -4,6 +4,7 @@ package com.dst.ayyapatelugu.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -26,9 +27,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -318,7 +324,7 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
             txtLocation.setText(marker.getSnippet());
 
             // Handle the "Start Navigation" button click
-            Button startNavigationButton = mContentsView.findViewById(R.id.start_navigation);
+            ImageView startNavigationButton = mContentsView.findViewById(R.id.start_navigation);
             startNavigationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -438,5 +444,43 @@ public class AyyaappaDevlyaluActivity extends AppCompatActivity implements OnMap
 
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.popup_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId(); // Get the clicked menu item ID
+
+        if (id == R.id.popup_info) {
+            informationDialog();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+    @SuppressLint("MissingInflatedId")
+    private void informationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(AyyaappaDevlyaluActivity.this);
+        View dialogView = LayoutInflater.from(AyyaappaDevlyaluActivity.this).inflate(R.layout.dialog_ayyappadevlyalu_information, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+         ImageButton closeButton = dialogView.findViewById(R.id.btn_close);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
 
 }

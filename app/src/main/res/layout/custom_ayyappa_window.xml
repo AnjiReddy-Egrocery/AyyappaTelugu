@@ -13,18 +13,18 @@
     card_view:strokeWidth="1dp"
     card_view:cardUseCompatPadding="true"
     card_view:cardElevation="5dp"
-    card_view:cardCornerRadius="8dp">
+    card_view:cardCornerRadius="8dp"
+    android:layout_margin="16dp">
 
     <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#FFF"
-        android:padding="12dp"
+        android:padding="8dp"
         android:orientation="vertical">
         <TextView
             android:id="@+id/ayyappa_window_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/black"
             android:gravity="center"
@@ -34,21 +34,20 @@
             android:id="@+id/ayyappa_location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="6dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/black"
             android:gravity="center"
             android:textSize="16dp"
             android:text="Location Details" />
-        <Button
+        <ImageView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="80dp"
             android:text="Start Navigation"
             android:id="@+id/start_navigation"
-            android:padding="8dp"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
+            android:layout_gravity="right"
+            android:layout_marginLeft="250dp"
+            android:src="@drawable/navigation"
             android:backgroundTint="#E41010" />
     </LinearLayout>
 

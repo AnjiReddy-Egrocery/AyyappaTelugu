@@ -1,5 +1,7 @@
 package com.dst.ayyapatelugu.Activity;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -14,9 +16,14 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -244,5 +251,42 @@ public class ViewAllDetailsActivity extends AppCompatActivity {
         Type listType = new TypeToken<List<SevaListModel>>() {}.getType();
         return gson.fromJson(cachedData, listType);
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.popup_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId(); // Get the clicked menu item ID
+
+        if (id == R.id.popup_info) {
+            informationDialog();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void informationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ViewAllDetailsActivity.this);
+        View dialogView = LayoutInflater.from(ViewAllDetailsActivity.this).inflate(R.layout.dialog_seva_information, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        ImageButton closeButton = dialogView.findViewById(R.id.btn_close);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
 
 }

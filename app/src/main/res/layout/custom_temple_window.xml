@@ -13,7 +13,8 @@
     card_view:strokeWidth="1dp"
     card_view:cardUseCompatPadding="true"
     card_view:cardElevation="5dp"
-    card_view:cardCornerRadius="8dp">
+    card_view:cardCornerRadius="8dp"
+    android:layout_margin="16dp">
 
     <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,7 +25,6 @@
             android:id="@+id/window_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/black"
             android:gravity="center"
@@ -34,21 +34,21 @@
             android:id="@+id/window_location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:layout_marginTop="12dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/black"
             android:gravity="center"
+            android:layout_marginTop="6dp"
             android:textSize="16dp"
             android:text="Location Details" />
-        <Button
+        <ImageView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="80dp"
             android:text="Start Navigation"
             android:id="@+id/start_navigation_button"
             android:padding="8dp"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
+            android:layout_marginLeft="250dp"
+            android:layout_gravity="right"
+            android:src="@drawable/navigation"
             android:backgroundTint="#E41010" />
     </LinearLayout>
 

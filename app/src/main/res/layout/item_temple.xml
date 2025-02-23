@@ -28,6 +28,17 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textColor="#757575" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Start Navigation"
+            android:id="@+id/start_navigation_button"
+            android:padding="8dp"
+            android:layout_marginLeft="250dp"
+            android:layout_gravity="right"
+            android:src="@drawable/navigation"
+            android:backgroundTint="#E41010" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
