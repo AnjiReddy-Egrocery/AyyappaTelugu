@@ -15,8 +15,7 @@ import com.dst.ayyapatelugu.R;
 
 public class AboutActivity extends AppCompatActivity {
     Toolbar toolbar;
-    String Name;
-    String Age;
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingInflatedId")
